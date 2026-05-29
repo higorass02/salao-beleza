@@ -36,30 +36,28 @@ class CashClosingController extends Controller
             ->orderBy('starts_at')
             ->get()
             ->map(fn ($a) => [
-                'id'          => $a->id,
-                'starts_at'   => $a->starts_at->format('H:i'),
-                'client_name' => $a->client?->name,
-                'service_name'=> $a->service?->name,
-                'service_value'       => (float) ($a->service?->price ?? 0),
-                'provider_percentage' => (float) ($a->service?->provider_percentage ?? 0),
-                'include_house_fee'   => (bool)  ($a->service?->include_house_fee ?? false),
-                'paid_to'     => $a->paid_to,
-                'type'        => 'appointment',
+                'id'               => $a->id,
+                'starts_at'        => $a->starts_at->format('H:i'),
+                'client_name'      => $a->client?->name,
+                'service_name'     => $a->service?->name,
+                'service_value'    => (float) ($a->service?->price ?? 0),
+                'include_house_fee'=> (bool)  ($a->service?->include_house_fee ?? false),
+                'paid_to'          => $a->paid_to,
+                'type'             => 'appointment',
             ]);
 
         $entries = CashEntry::where('date', $validated)
             ->orderBy('performed_at')
             ->get()
             ->map(fn ($e) => [
-                'id'                  => $e->id,
-                'starts_at'           => $e->performed_at,
-                'client_name'         => $e->client_name,
-                'service_name'        => $e->service_name,
-                'service_value'       => (float) $e->service_value,
-                'provider_percentage' => (float) $e->provider_percentage,
-                'include_house_fee'   => (bool)  $e->include_house_fee,
-                'paid_to'             => $e->paid_to,
-                'type'                => 'entry',
+                'id'               => $e->id,
+                'starts_at'        => $e->performed_at,
+                'client_name'      => $e->client_name,
+                'service_name'     => $e->service_name,
+                'service_value'    => (float) $e->service_value,
+                'include_house_fee'=> (bool)  $e->include_house_fee,
+                'paid_to'          => $e->paid_to,
+                'type'             => 'entry',
             ]);
 
         $preview = $service->computeDay($validated);

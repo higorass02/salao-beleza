@@ -28,9 +28,11 @@ import Layout from '@/Layouts/AdminLayout.vue';
 import AppointmentModal from './AppointmentModal.vue';
 
 const props = defineProps({
-  appointments: { type: Array, default: () => [] },
-  services: { type: Array, default: () => [] },
-  employees: { type: Array, default: () => [] },
+  appointments:       { type: Array,  default: () => [] },
+  services:           { type: Array,  default: () => [] },
+  employees:          { type: Array,  default: () => [] },
+  businessHoursStart: { type: String, default: '08:00' },
+  businessHoursEnd:   { type: String, default: '20:00' },
 });
 
 const showModal = ref(false);
@@ -52,9 +54,11 @@ onMounted(async () => {
       center: 'title',
       right: 'timeGridWeek,timeGridDay',
     },
-    slotMinTime: '07:00:00',
-    slotMaxTime: '21:00:00',
-    allDaySlot: false,
+    slotMinTime:   `${props.businessHoursStart}:00`,
+    slotMaxTime:   `${props.businessHoursEnd}:00`,
+    allDaySlot:    false,
+    expandRows:    false,
+    contentHeight: 'auto',
     events: props.appointments.map((a) => ({
       id: a.id,
       title: `${a.client?.name ?? ''} — ${a.service?.name ?? ''}`,

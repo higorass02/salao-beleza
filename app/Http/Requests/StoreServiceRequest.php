@@ -18,9 +18,8 @@ class StoreServiceRequest extends FormRequest
             'description'         => ['nullable', 'string'],
             'price'               => ['required', 'numeric', 'min:0'],
             'duration_minutes'    => ['required', 'integer', 'min:1'],
-            'active'              => ['boolean'],
-            'provider_percentage' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'include_house_fee'   => ['boolean'],
+            'active'            => ['boolean'],
+            'include_house_fee' => ['boolean'],
         ];
     }
 }

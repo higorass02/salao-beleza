@@ -34,9 +34,11 @@ class AppointmentController extends Controller
         $appointments = $service->listUpcoming();
 
         return Inertia::render('Calendar/Index', [
-            'appointments' => $appointments,
-            'services'     => Service::where('active', true)->get(['id', 'name', 'price', 'duration_minutes']),
-            'employees'    => Employee::where('active', true)->get(['id', 'name', 'role']),
+            'appointments'        => $appointments,
+            'services'            => Service::where('active', true)->get(['id', 'name', 'price', 'duration_minutes']),
+            'employees'           => Employee::where('active', true)->get(['id', 'name', 'role']),
+            'businessHoursStart'  => \App\Models\Setting::get('business_hours_start', '08:00'),
+            'businessHoursEnd'    => \App\Models\Setting::get('business_hours_end', '20:00'),
         ]);
     }
 

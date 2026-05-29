@@ -15,15 +15,13 @@ class Service extends Model
         'price',
         'duration_minutes',
         'active',
-        'provider_percentage',
         'include_house_fee',
     ];
 
     protected $casts = [
-        'active'              => 'boolean',
-        'price'               => 'decimal:2',
-        'provider_percentage' => 'decimal:2',
-        'include_house_fee'   => 'boolean',
+        'active'            => 'boolean',
+        'price'             => 'decimal:2',
+        'include_house_fee' => 'boolean',
     ];
 
     public function appointments()

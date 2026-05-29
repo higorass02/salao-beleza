@@ -14,7 +14,7 @@ class SettingsController extends Controller
         return Inertia::render('Settings/Index', [
             'settings' => Setting::allAsArray(),
             'services' => Service::orderBy('name')->get([
-                'id', 'name', 'price', 'active', 'provider_percentage', 'include_house_fee',
+                'id', 'name', 'price', 'active', 'include_house_fee',
             ]),
         ]);
     }

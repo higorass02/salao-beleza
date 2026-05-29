@@ -57,7 +57,7 @@
             />
             <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-sm text-gray-500">%</span>
           </div>
-          <p class="mt-1 text-xs text-gray-500">Aplicado aos serviços com a flag "Taxa da casa" ativada.</p>
+          <p class="mt-1 text-xs text-gray-500">Acréscimo aplicado aos serviços com "Cobrar taxa da casa" ativado.</p>
           <p v-if="settingsForm.errors.house_fee_rate" class="mt-1 text-xs text-red-600">{{ settingsForm.errors.house_fee_rate }}</p>
         </div>
 
@@ -76,12 +76,12 @@
         </div>
       </form>
 
-      <!-- Services pricing config -->
+      <!-- Services table -->
       <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
         <div class="border-b border-gray-200 px-6 py-4">
-          <h2 class="text-base font-semibold text-gray-900">Configuração de serviços</h2>
+          <h2 class="text-base font-semibold text-gray-900">Serviços cadastrados</h2>
           <p class="mt-0.5 text-sm text-gray-500">
-            % do prestador e taxa da casa por serviço. Edite cada serviço para alterar.
+            A flag "Cobrar taxa da casa" é configurada em cada serviço individualmente.
           </p>
         </div>
         <div class="overflow-x-auto">
@@ -90,7 +90,6 @@
               <tr class="bg-gray-50">
                 <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Serviço</th>
                 <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Preço</th>
-                <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">% Prestador</th>
                 <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Taxa da casa</th>
                 <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Status</th>
                 <th class="px-6 py-3"></th>
@@ -100,11 +99,6 @@
               <tr v-for="service in services" :key="service.id" class="hover:bg-gray-50">
                 <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ service.name }}</td>
                 <td class="px-6 py-4 text-sm text-gray-600">R$ {{ Number(service.price).toFixed(2) }}</td>
-                <td class="px-6 py-4">
-                  <span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
-                    {{ service.provider_percentage }}%
-                  </span>
-                </td>
                 <td class="px-6 py-4">
                   <span
                     :class="service.include_house_fee
@@ -146,7 +140,7 @@ const props = defineProps({
 const settingsForm = useForm({
   business_hours_start: props.settings.business_hours_start ?? '08:00',
   business_hours_end:   props.settings.business_hours_end   ?? '20:00',
-  house_fee_rate:       props.settings.house_fee_rate        ?? '10',
+  house_fee_rate:       props.settings.house_fee_rate        ?? '15',
 });
 
 function saveSettings() {

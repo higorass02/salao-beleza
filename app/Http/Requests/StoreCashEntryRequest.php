@@ -17,9 +17,8 @@ class StoreCashEntryRequest extends FormRequest
             'performed_at'        => ['required', 'date_format:H:i'],
             'client_name'         => ['required', 'string', 'max:255'],
             'service_name'        => ['required', 'string', 'max:255'],
-            'service_value'       => ['required', 'numeric', 'min:0'],
-            'provider_percentage' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'include_house_fee'   => ['boolean'],
+            'service_value'     => ['required', 'numeric', 'min:0'],
+            'include_house_fee' => ['boolean'],
             'paid_to'             => ['nullable', 'in:provider,store'],
             'notes'               => ['nullable', 'string'],
         ];

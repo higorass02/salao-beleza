@@ -110,10 +110,7 @@
                   <td class="px-4 py-3 text-sm text-gray-900">{{ item.client_name }}</td>
                   <td class="px-4 py-3">
                     <div class="text-sm text-gray-900">{{ item.service_name }}</div>
-                    <div class="text-xs text-gray-500">
-                      {{ item.provider_percentage }}% prestador
-                      <span v-if="item.include_house_fee" class="ml-1 text-violet-500">+ taxa casa</span>
-                    </div>
+                    <div v-if="item.include_house_fee" class="text-xs text-violet-500">+ taxa da casa</div>
                   </td>
                   <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ fmt(item.service_value) }}</td>
                   <td class="px-4 py-3">
@@ -214,19 +211,13 @@
             <input v-model="entryForm.service_name" type="text" class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500" placeholder="Nome do serviço" required />
             <p v-if="entryForm.errors.service_name" class="mt-1 text-xs text-red-600">{{ entryForm.errors.service_name }}</p>
           </div>
-          <div class="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label class="block text-sm font-medium text-gray-700">% Prestador</label>
-              <input v-model="entryForm.provider_percentage" type="number" min="0" max="100" step="0.01" class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500" placeholder="0" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700">Para quem?</label>
-              <select v-model="entryForm.paid_to" class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
-                <option value="">Pendente</option>
-                <option value="store">Casa</option>
-                <option value="provider">Prestador</option>
-              </select>
-            </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Para quem?</label>
+            <select v-model="entryForm.paid_to" class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+              <option value="">Pendente</option>
+              <option value="store">Casa</option>
+              <option value="provider">Prestador</option>
+            </select>
           </div>
           <div>
             <label class="flex cursor-pointer items-center gap-3">
@@ -356,14 +347,13 @@ function confirmClose() {
 
 // Entry form
 const entryForm = useForm({
-  performed_at:        '',
-  client_name:         '',
-  service_name:        '',
-  service_value:       '',
-  provider_percentage: '0',
-  include_house_fee:   false,
-  paid_to:             '',
-  notes:               '',
+  performed_at:      '',
+  client_name:       '',
+  service_name:      '',
+  service_value:     '',
+  include_house_fee: false,
+  paid_to:           '',
+  notes:             '',
 });
 
 function submitEntry() {

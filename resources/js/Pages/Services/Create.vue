@@ -74,40 +74,18 @@
             <p v-if="form.errors.duration_minutes" class="mt-1 text-xs text-red-600">{{ form.errors.duration_minutes }}</p>
           </div>
 
-          <!-- Financeiro -->
           <div class="sm:col-span-2">
-            <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-4">
-              <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Configuração financeira</p>
-              <div class="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700">% do prestador</label>
-                  <div class="relative mt-1">
-                    <input
-                      v-model="form.provider_percentage"
-                      type="number" min="0" max="100" step="0.01"
-                      class="block w-full rounded-lg border border-gray-300 px-3 py-2 pr-8 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
-                      placeholder="0"
-                    />
-                    <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-sm text-gray-500">%</span>
-                  </div>
-                  <p class="mt-1 text-xs text-gray-400">Percentual que vai para o prestador no fechamento do caixa.</p>
-                  <p v-if="form.errors.provider_percentage" class="mt-1 text-xs text-red-600">{{ form.errors.provider_percentage }}</p>
-                </div>
-                <div class="flex items-center">
-                  <label class="flex cursor-pointer items-center gap-3 pt-5">
-                    <div class="relative">
-                      <input type="checkbox" v-model="form.include_house_fee" class="sr-only peer" />
-                      <div class="h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-violet-500 transition-colors" />
-                      <div class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5" />
-                    </div>
-                    <div>
-                      <span class="text-sm font-medium text-gray-700">Incluir taxa da casa</span>
-                      <p class="text-xs text-gray-400">Adiciona % da casa sobre o valor do serviço.</p>
-                    </div>
-                  </label>
-                </div>
+            <label class="flex cursor-pointer items-center gap-3">
+              <div class="relative">
+                <input type="checkbox" v-model="form.include_house_fee" class="sr-only peer" />
+                <div class="h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-violet-500 transition-colors" />
+                <div class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5" />
               </div>
-            </div>
+              <div>
+                <span class="text-sm font-medium text-gray-700">Cobrar taxa da casa</span>
+                <p class="text-xs text-gray-400">Aplica o percentual da casa configurado no admin.</p>
+              </div>
+            </label>
           </div>
 
           <div class="sm:col-span-2">
@@ -148,13 +126,12 @@ import { Link, useForm } from '@inertiajs/vue3';
 import Layout from '@/Layouts/AdminLayout.vue';
 
 const form = useForm({
-  name:                '',
-  description:         '',
-  price:               '',
-  duration_minutes:    '',
-  active:              true,
-  provider_percentage: '0',
-  include_house_fee:   false,
+  name:              '',
+  description:       '',
+  price:             '',
+  duration_minutes:  '',
+  active:            true,
+  include_house_fee: false,
 });
 
 function submit() {
