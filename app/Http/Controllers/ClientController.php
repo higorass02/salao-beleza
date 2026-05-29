@@ -1,0 +1,67 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Requests\StoreClientRequest;
+use App\Http\Requests\UpdateClientRequest;
+use App\Models\Client;
+use App\Services\ClientService;
+use Inertia\Inertia;
+use Illuminate\Http\Request;
+
+class ClientController extends Controller
+{
+    public function index(ClientService $service)
+    {
+        $clients = $service->list();
+
+        return Inertia::render('Clients/Index', [
+            'clients' => $clients,
+        ]);
+    }
+
+    public function create()
+    {
+        return Inertia::render('Clients/Create');
+    }
+
+    public function store(StoreClientRequest $request, ClientService $service)
+    {
+        $service->create($request->validated());
+
+        return redirect()->route('clients.index');
+    }
+
+    public function edit(Client $client)
+    {
+        return Inertia::render('Clients/Edit', [
+            'client' => $client,
+        ]);
+    }
+
+    public function update(UpdateClientRequest $request, Client $client, ClientService $service)
+    {
+        $service->update($client, $request->validated());
+
+        return redirect()->route('clients.index');
+    }
+
+    public function destroy(Client $client)
+    {
+        $client->delete();
+
+        return redirect()->route('clients.index');
+    }
+
+    public function search(Request $request)
+    {
+        return Client::query()
+            ->when($request->q, fn ($query, $q) => $query->where(fn ($sub) =>
+                $sub->where('name', 'like', "%{$q}%")
+                    ->orWhere('email', 'like', "%{$q}%")
+                    ->orWhere('phone', 'like', "%{$q}%")
+            ))
+            ->limit(10)
+            ->get(['id', 'name', 'email', 'phone']);
+    }
+}

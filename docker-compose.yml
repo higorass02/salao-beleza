@@ -1,0 +1,88 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    image: salao_app
+    container_name: salao_app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=salao
+      - DB_USERNAME=salao
+      - DB_PASSWORD=secret
+    depends_on:
+      - mysql
+    networks:
+      - salao_network
+
+  nginx:
+    image: nginx:stable-alpine
+    container_name: salao_nginx
+    restart: unless-stopped
+    ports:
+      - 80:80
+    volumes:
+      - ./:/var/www/html
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    networks:
+      - salao_network
+
+  mysql:
+    image: mysql:8.0
+    container_name: salao_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: salao
+      MYSQL_USER: salao
+      MYSQL_PASSWORD: secret
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - salao_network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: salao_phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: salao
+      PMA_PASSWORD: secret
+    ports:
+      - 8080:80
+    depends_on:
+      - mysql
+    networks:
+      - salao_network
+
+  node:
+    image: node:20-alpine
+    container_name: salao_node
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    # Instala deps e sobe o Vite diretamente (sem o hook predev que requer PHP)
+    command: sh -c "yarn install --frozen-lockfile 2>/dev/null || yarn install && npx vite --host 0.0.0.0"
+    ports:
+      - 5173:5173
+    networks:
+      - salao_network
+
+volumes:
+  mysql_data:
+
+networks:
+  salao_network:
+    driver: bridge
