@@ -42,13 +42,14 @@ const calendarContainer = ref(null);
 
 onMounted(async () => {
   const { Calendar } = await import('@fullcalendar/core');
-  const timeGridPlugin = (await import('@fullcalendar/timegrid')).default;
+  const timeGridPlugin  = (await import('@fullcalendar/timegrid')).default;
   const interactionPlugin = (await import('@fullcalendar/interaction')).default;
+  const ptBrLocale = (await import('@fullcalendar/core/locales/pt-br')).default;
 
   const calendar = new Calendar(calendarContainer.value, {
     plugins: [timeGridPlugin, interactionPlugin],
     initialView: 'timeGridWeek',
-    locale: 'pt-br',
+    locale: ptBrLocale,
     headerToolbar: {
       left: 'prev,next today',
       center: 'title',

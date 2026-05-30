@@ -43,6 +43,8 @@ class CashClosingController extends Controller
                 'service_value'    => (float) ($a->service?->price ?? 0),
                 'include_house_fee'=> (bool)  ($a->service?->include_house_fee ?? false),
                 'paid_to'          => $a->paid_to,
+                'employee_id'      => $a->employee_id,
+                'employee_name'    => $a->employee?->name,
                 'type'             => 'appointment',
             ]);
 

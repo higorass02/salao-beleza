@@ -99,6 +99,7 @@
                   <th class="px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500">Horário</th>
                   <th class="px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500">Cliente</th>
                   <th class="px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500">Serviço</th>
+                  <th class="px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500">Prestador</th>
                   <th class="px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500">Valor</th>
                   <th class="px-4 py-3 text-xs font-medium uppercase tracking-wide text-gray-500">Para quem foi pago</th>
                   <th v-if="!isClosed" class="px-4 py-3"></th>
@@ -112,6 +113,7 @@
                     <div class="text-sm text-gray-900">{{ item.service_name }}</div>
                     <div v-if="item.include_house_fee" class="text-xs text-violet-500">+ taxa da casa</div>
                   </td>
+                  <td class="px-4 py-3 text-sm text-gray-600">{{ item.employee_name ?? '—' }}</td>
                   <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ fmt(item.service_value) }}</td>
                   <td class="px-4 py-3">
                     <select
@@ -142,21 +144,107 @@
           </div>
         </div>
 
-        <!-- Paid-to breakdown (when closed) -->
-        <div v-if="isClosed" class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-          <div class="border-b border-gray-200 px-6 py-4">
-            <h2 class="text-base font-semibold text-gray-900">Resumo de recebimentos</h2>
+        <!-- Acerto por prestador -->
+        <div v-if="byEmployee.length > 0" class="space-y-3">
+          <div class="flex items-center gap-2">
+            <h2 class="text-base font-semibold text-gray-900">Acerto por prestador</h2>
+            <span class="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">
+              Atualiza em tempo real
+            </span>
           </div>
-          <div class="grid divide-y divide-gray-100 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
-            <div class="p-6">
-              <p class="text-sm font-medium text-gray-500">Pago à casa</p>
-              <p class="mt-2 text-xl font-bold text-gray-900">{{ fmt(paidToBreakdown.store) }}</p>
-              <p class="mt-1 text-xs text-gray-400">{{ paidToBreakdown.storeCount }} atendimento(s)</p>
+
+          <div
+            v-for="emp in byEmployee"
+            :key="emp.id"
+            class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm"
+          >
+            <!-- Header do prestador -->
+            <div class="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-5 py-3">
+              <div class="flex items-center gap-2">
+                <div class="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-sm font-semibold text-emerald-700">
+                  {{ emp.name?.[0]?.toUpperCase() }}
+                </div>
+                <span class="text-sm font-semibold text-gray-900">{{ emp.name }}</span>
+                <span class="text-xs text-gray-400">· {{ emp.count }} atendimento(s)</span>
+              </div>
+              <span class="text-sm font-medium text-gray-700">{{ fmt(emp.totalServices) }}</span>
             </div>
-            <div class="p-6">
-              <p class="text-sm font-medium text-gray-500">Pago ao prestador</p>
-              <p class="mt-2 text-xl font-bold text-gray-900">{{ fmt(paidToBreakdown.provider) }}</p>
-              <p class="mt-1 text-xs text-gray-400">{{ paidToBreakdown.providerCount }} atendimento(s)</p>
+
+            <!-- Linha de distribuição -->
+            <div class="grid divide-x divide-gray-100 sm:grid-cols-3">
+              <div class="px-5 py-3">
+                <p class="text-xs text-gray-400">Total do prestador</p>
+                <p class="mt-0.5 text-base font-bold text-gray-900">{{ fmt(emp.totalServices) }}</p>
+              </div>
+              <div class="px-5 py-3">
+                <p class="text-xs text-gray-400">Taxa da casa ({{ houseRate }}%)</p>
+                <p class="mt-0.5 text-base font-bold text-violet-600">{{ fmt(emp.taxaCasa) }}</p>
+              </div>
+              <div class="px-5 py-3">
+                <p class="text-xs text-gray-400">Parte do prestador</p>
+                <p class="mt-0.5 text-base font-bold text-emerald-600">{{ fmt(emp.partePrestador) }}</p>
+              </div>
+            </div>
+
+            <!-- Fluxo físico -->
+            <div class="grid divide-x divide-gray-100 border-t border-gray-100 sm:grid-cols-3">
+              <div class="px-5 py-3 text-sm">
+                <p class="text-xs text-gray-400">Pago ao prestador</p>
+                <p class="font-medium text-gray-900">{{ fmt(emp.recebidoPeloPrestador) }}</p>
+              </div>
+              <div class="px-5 py-3 text-sm">
+                <p class="text-xs text-gray-400">Pago à casa</p>
+                <p class="font-medium text-gray-900">{{ fmt(emp.recebidoPelaCasa) }}</p>
+              </div>
+              <div class="px-5 py-3 text-sm">
+                <p class="text-xs text-gray-400">Pendente</p>
+                <p :class="emp.pendingValue > 0 ? 'text-amber-600 font-medium' : 'text-gray-400'">
+                  {{ fmt(emp.pendingValue) }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Resultado do acerto -->
+            <div
+              class="border-t px-5 py-3 flex items-center justify-between"
+              :class="emp.pendingValue > 0
+                ? 'bg-amber-50 border-amber-200'
+                : emp.net > 0
+                  ? 'bg-blue-50 border-blue-200'
+                  : emp.net < 0
+                    ? 'bg-rose-50 border-rose-200'
+                    : 'bg-emerald-50 border-emerald-200'"
+            >
+              <p
+                class="text-sm font-semibold"
+                :class="emp.pendingValue > 0
+                  ? 'text-amber-700'
+                  : emp.net > 0
+                    ? 'text-blue-700'
+                    : emp.net < 0
+                      ? 'text-rose-700'
+                      : 'text-emerald-700'"
+              >
+                <template v-if="emp.pendingValue > 0">
+                  ⏳ Há {{ fmt(emp.pendingValue) }} pendente — preencha "Para quem foi pago"
+                </template>
+                <template v-else-if="emp.net > 0">
+                  🏠 Casa deve ao prestador
+                </template>
+                <template v-else-if="emp.net < 0">
+                  ⚠️ Prestador deve à casa
+                </template>
+                <template v-else>
+                  ✓ Acertado
+                </template>
+              </p>
+              <p
+                v-if="emp.net !== 0 && emp.pendingValue === 0"
+                class="text-lg font-bold"
+                :class="emp.net > 0 ? 'text-blue-700' : 'text-rose-700'"
+              >
+                {{ fmt(Math.abs(emp.net)) }}
+              </p>
             </div>
           </div>
         </div>
@@ -263,6 +351,9 @@ const today = new Date().toISOString().split('T')[0];
 const selectedDate = ref(props.date ?? today);
 const showAddModal  = ref(false);
 
+// Armazena atualizações de paid_to localmente para resposta imediata
+const localPaidTo = ref({});
+
 const isClosed = computed(() => props.dailyClosing?.status === 'closed');
 
 const formattedDate = computed(() => {
@@ -273,13 +364,23 @@ const formattedDate = computed(() => {
 });
 
 const allItems = computed(() => {
-  const appts = (props.appointments ?? []).map(a => ({ ...a, _sortKey: a.starts_at }));
-  const ents  = (props.entries ?? []).map(e => ({ ...e, _sortKey: e.starts_at }));
+  const key = (item) => `${item.type}-${item.id}`;
+  const appts = (props.appointments ?? []).map(a => ({
+    ...a,
+    _sortKey: a.starts_at,
+    paid_to: localPaidTo.value[key(a)] !== undefined ? localPaidTo.value[key(a)] : a.paid_to,
+  }));
+  const ents = (props.entries ?? []).map(e => ({
+    ...e,
+    _sortKey: e.starts_at,
+    paid_to: localPaidTo.value[key(e)] !== undefined ? localPaidTo.value[key(e)] : e.paid_to,
+  }));
   return [...appts, ...ents].sort((a, b) => a._sortKey.localeCompare(b._sortKey));
 });
 
 const houseRate = computed(() => parseFloat(props.settings?.house_fee_rate ?? 0));
 
+// Calcula client-side para atualizar instantaneamente a cada marcação
 const summary = computed(() => {
   if (isClosed.value && props.dailyClosing) {
     return {
@@ -289,23 +390,91 @@ const summary = computed(() => {
       house_fee_total: parseFloat(props.dailyClosing.house_fee_total ?? 0),
     };
   }
-  if (props.preview) return {
-    total_value:     parseFloat(props.preview.total_value ?? 0),
-    provider_total:  parseFloat(props.preview.provider_total ?? 0),
-    store_total:     parseFloat(props.preview.store_total ?? 0),
-    house_fee_total: parseFloat(props.preview.house_fee_total ?? 0),
+
+  let total = 0, providerSum = 0, storeSum = 0, feeSum = 0;
+  for (const item of allItems.value) {
+    const base = parseFloat(item.service_value ?? 0);
+    const fee  = item.include_house_fee ? base * houseRate.value / 100 : 0;
+    total      += base + fee;
+    providerSum += base;
+    storeSum    += fee;
+    feeSum      += fee;
+  }
+  return {
+    total_value:     parseFloat(total.toFixed(2)),
+    provider_total:  parseFloat(providerSum.toFixed(2)),
+    store_total:     parseFloat(storeSum.toFixed(2)),
+    house_fee_total: parseFloat(feeSum.toFixed(2)),
   };
-  return { total_value: 0, provider_total: 0, store_total: 0, house_fee_total: 0 };
 });
 
+// Breakdown totais por quem recebeu
 const paidToBreakdown = computed(() => {
-  let storeVal = 0, providerVal = 0, storeCount = 0, providerCount = 0;
+  let storeVal = 0, providerVal = 0, pendingVal = 0;
+  let storeCount = 0, providerCount = 0, pendingCount = 0;
   for (const item of allItems.value) {
     const val = parseFloat(item.service_value ?? 0);
-    if (item.paid_to === 'store')    { storeVal += val;    storeCount++;    }
-    if (item.paid_to === 'provider') { providerVal += val; providerCount++; }
+    if (item.paid_to === 'store')         { storeVal += val;    storeCount++;    }
+    else if (item.paid_to === 'provider') { providerVal += val; providerCount++; }
+    else                                  { pendingVal += val;  pendingCount++;  }
   }
-  return { store: storeVal, provider: providerVal, storeCount, providerCount };
+  return { store: storeVal, provider: providerVal, pending: pendingVal,
+           storeCount, providerCount, pendingCount };
+});
+
+// Acerto por prestador
+// Regra: casa recebe house_fee_rate% de cada serviço (se include_house_fee)
+//        prestador recebe o restante
+// paid_to mostra quem tem o dinheiro fisicamente → determina quem deve quem
+const byEmployee = computed(() => {
+  const rate = houseRate.value / 100;
+  const map = new Map();
+
+  for (const item of allItems.value) {
+    const empId   = item.employee_id   ?? 'manual';
+    const empName = item.employee_name ?? 'Entrada manual';
+
+    if (!map.has(empId)) {
+      map.set(empId, {
+        id: empId, name: empName,
+        count: 0,
+        totalServices:          0,
+        taxaCasa:               0, // o que a casa DEVERIA receber
+        partePrestador:         0, // o que o prestador DEVERIA receber
+        recebidoPeloPrestador:  0, // dinheiro físico com o prestador
+        recebidoPelaCasa:       0, // dinheiro físico com a casa
+        prestadorDeveCasa:      0, // prestador recebeu mas deve taxa à casa
+        casaDevePrestador:      0, // casa recebeu mas deve parte ao prestador
+        pendingValue:           0,
+      });
+    }
+
+    const emp = map.get(empId);
+    const val = parseFloat(item.service_value ?? 0);
+    const taxa = item.include_house_fee ? val * rate : 0;
+    const parteProvider = val - taxa;
+
+    emp.count++;
+    emp.totalServices  += val;
+    emp.taxaCasa       += taxa;
+    emp.partePrestador += parteProvider;
+
+    if (item.paid_to === 'provider') {
+      emp.recebidoPeloPrestador += val;
+      emp.prestadorDeveCasa     += taxa;         // deve repassar a taxa à casa
+    } else if (item.paid_to === 'store') {
+      emp.recebidoPelaCasa   += val;
+      emp.casaDevePrestador  += parteProvider;   // deve repassar o restante ao prestador
+    } else {
+      emp.pendingValue += val;
+    }
+  }
+
+  return Array.from(map.values()).map(emp => ({
+    ...emp,
+    // positivo → casa deve ao prestador | negativo → prestador deve à casa
+    net: parseFloat((emp.casaDevePrestador - emp.prestadorDeveCasa).toFixed(2)),
+  }));
 });
 
 function fmt(value) {
@@ -329,10 +498,14 @@ function loadReport() {
 }
 
 function updatePaidTo(item, paid_to) {
+  // Atualiza localmente de imediato (sem aguardar servidor)
+  const key = `${item.type}-${item.id}`;
+  localPaidTo.value[key] = paid_to || null;
+
   const route = item.type === 'appointment'
     ? `/cash/daily/${props.date}/appointments/${item.id}`
     : `/cash/daily/${props.date}/entries/${item.id}`;
-  router.patch(route, { paid_to: paid_to || null }, { preserveScroll: true });
+  router.patch(route, { paid_to: paid_to || null }, { preserveScroll: true, preserveState: true });
 }
 
 function removeEntry(id) {

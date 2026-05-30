@@ -14,6 +14,8 @@ class Client extends Model
         'email',
         'phone',
         'notes',
+        'birth_day',
+        'birth_month',
     ];
 
     public function appointments()
