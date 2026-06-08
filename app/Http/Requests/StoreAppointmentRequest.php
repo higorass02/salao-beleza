@@ -18,7 +18,7 @@ class StoreAppointmentRequest extends FormRequest
             'client_id'   => ['required', 'exists:clients,id'],
             'employee_id' => ['required', Rule::exists('employees', 'id')->where('active', true)],
             'service_id'  => ['required', Rule::exists('services', 'id')->where('active', true)],
-            'starts_at'   => ['required', 'date', 'after_or_equal:now'],
+            'starts_at'   => ['required', 'date'],
             'notes'       => ['nullable', 'string'],
         ];
     }
