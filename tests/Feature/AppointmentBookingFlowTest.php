@@ -150,15 +150,20 @@ class AppointmentBookingFlowTest extends TestCase
              ->assertSessionHasErrors(['service_id']);
     }
 
-    // ── RN-05: não agendar no passado ────────────────────────────────────────
+    // ── Admin pode agendar em datas passadas ─────────────────────────────────
 
-    public function test_booking_fails_for_past_date(): void
+    public function test_booking_succeeds_for_past_date(): void
     {
         $payload = $this->validPayload(['starts_at' => '2020-01-01 10:00:00']);
 
-        $this->from('/calendar')
-             ->post('/appointments', $payload)
-             ->assertSessionHasErrors(['starts_at']);
+        $this->post('/appointments', $payload)
+             ->assertRedirect('/dashboard');
+
+        $this->assertDatabaseHas('appointments', [
+            'client_id'  => $payload['client_id'],
+            'starts_at'  => '2020-01-01 10:00:00',
+            'status'     => 'scheduled',
+        ]);
     }
 
     // ── RN-03: cliente deve existir ───────────────────────────────────────────
