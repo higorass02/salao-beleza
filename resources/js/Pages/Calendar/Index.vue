@@ -161,8 +161,9 @@ const clientQuery       = ref('');
 const clientSuggestions = ref([]);
 const selectedClientId  = ref(null);
 
-let calendarInstance = null;
-let clientDebounce   = null;
+let calendarInstance    = null;
+let clientDebounce      = null;
+let clientJustSelected  = false;
 
 // --- filtros ---
 function getFiltered() {
@@ -189,6 +190,10 @@ function selectEmployee(id) {
 
 // --- autocomplete de cliente ---
 watch(clientQuery, (val) => {
+  if (clientJustSelected) {
+    clientJustSelected = false;
+    return;
+  }
   clearTimeout(clientDebounce);
   if (!val || val.length < 2) {
     clientSuggestions.value = [];
@@ -211,6 +216,7 @@ async function fetchClients(q) {
 }
 
 function selectClient(client) {
+  clientJustSelected      = true;
   clientQuery.value       = client.name;
   clientSuggestions.value = [];
   selectedClientId.value  = client.id;

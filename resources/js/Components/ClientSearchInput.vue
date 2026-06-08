@@ -35,8 +35,13 @@ const query = ref(props.modelValue?.name ?? '');
 const results = ref([]);
 
 let debounceTimer = null;
+let justSelected  = false;
 
 watch(query, (val) => {
+  if (justSelected) {
+    justSelected = false;
+    return;
+  }
   clearTimeout(debounceTimer);
   if (!val || val.length < 2) {
     results.value = [];
@@ -55,8 +60,9 @@ async function fetchResults(q) {
 }
 
 function select(client) {
+  justSelected = true;
   emit('update:modelValue', client);
-  query.value = client.name;
-  results.value = [];
+  query.value    = client.name;
+  results.value  = [];
 }
 </script>
