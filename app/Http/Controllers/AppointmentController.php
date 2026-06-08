@@ -8,6 +8,7 @@ use App\Models\Client;
 use App\Models\Employee;
 use App\Models\Service;
 use App\Services\AppointmentService;
+use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 
 class AppointmentController extends Controller
@@ -31,7 +32,10 @@ class AppointmentController extends Controller
 
     public function index(AppointmentService $service)
     {
-        $appointments = $service->listUpcoming();
+        $from = Carbon::now()->startOfWeek()->subWeeks(4)->toDateTimeString();
+        $to   = Carbon::now()->endOfWeek()->addWeeks(8)->toDateTimeString();
+
+        $appointments = $service->listForCalendar($from, $to);
 
         return Inertia::render('Calendar/Index', [
             'appointments'        => $appointments,

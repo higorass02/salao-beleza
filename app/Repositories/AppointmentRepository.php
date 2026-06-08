@@ -16,6 +16,16 @@ class AppointmentRepository implements AppointmentRepositoryInterface
             ->get();
     }
 
+    public function getForCalendar(string $from, string $to)
+    {
+        return Appointment::with(['client', 'employee', 'service'])
+            ->where('starts_at', '>=', $from)
+            ->where('starts_at', '<=', $to)
+            ->where('status', '!=', 'canceled')
+            ->orderBy('starts_at')
+            ->get();
+    }
+
     public function hasConflict(int $employeeId, int $serviceId, string $startsAt, string $endsAt): bool
     {
         return Appointment::where('employee_id', $employeeId)

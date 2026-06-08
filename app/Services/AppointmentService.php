@@ -22,4 +22,9 @@ class AppointmentService
     {
         return $this->repository->getUpcoming();
     }
+
+    public function listForCalendar(string $from, string $to)
+    {
+        return $this->repository->getForCalendar($from, $to);
+    }
 }
