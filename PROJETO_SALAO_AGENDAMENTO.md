@@ -302,7 +302,18 @@ salao-agendamento/
 - Clicar em um **slot vazio** abre `AppointmentModal.vue` (criação).
 - Clicar em um **evento existente** abre `AppointmentDetailModal.vue` (detalhes).
 - Eventos carregados via `AppointmentRepository::getForCalendar()` com janela de **4 semanas atrás → 8 semanas à frente** (evita filtro `>= now()` que ocultava agendamentos do dia).
+- **Cada prestador tem uma cor fixa** (paleta de 8 cores) — os eventos e os pills de filtro compartilham a mesma cor.
 - Arrastar/redimensionar evento (opcional, fase 2) → revalida conflito.
+
+### Filtros do calendário (`Calendar/Index.vue`)
+Barra de filtros acima do calendário com dois controles acumulativos (ambos podem estar ativos ao mesmo tempo):
+
+| Controle | Posição | Comportamento |
+|---|---|---|
+| **Busca de cliente** | Esquerda | Autocomplete com debounce 300ms — consulta `GET /clients/search?q=`. Exibe nome + telefone/e-mail nas sugestões. Botão X para limpar. Ao selecionar um cliente, filtra o calendário por `client_id`. |
+| **Pills de prestador** | Direita | Um pill por funcionário ativo + "Todos". Pill ativo fica com a cor do prestador. Ao clicar, filtra por `employee_id`. |
+
+Filtragem é feita **no frontend** (`getFiltered()`), atualizando o FullCalendar via `removeAllEvents()` + `addEventSource()` — sem round-trip ao servidor.
 
 ### Campos do modal `AppointmentModal.vue`
 | Campo | Componente | Comportamento |
@@ -483,5 +494,7 @@ Frases curtas que você pode usar comigo (Claude) para avançar no projeto. Cada
 | 2026-06-08 | Atualização de infra: Node.js 20 → 24 no Docker e CI. |
 | 2026-06-08 | Fix calendário: substituído `getUpcoming()` (>= now) por `getForCalendar($from, $to)` com janela de datas — agendamentos do dia não desaparecem mais. |
 | 2026-06-08 | Novo: `AppointmentDetailModal.vue` — clique no evento do calendário abre detalhes. |
+| 2026-06-08 | Novo: filtro por prestador no calendário — pills coloridos, cores distintas por funcionário nos eventos. |
+| 2026-06-08 | Novo: busca de cliente com autocomplete no calendário — alinhada à esquerda, filtro acumulativo com prestador. |
 | 2026-06-08 | Novo: edição de agendamento — `UpdateAppointmentAction`, `UpdateAppointmentRequest`, `Appointments/Edit.vue`, rotas `edit`/`update`. Botão Editar visível apenas para admins (`is_admin`). |
 | 2026-06-08 | Fix serialização: cast `datetime:Y-m-d H:i:s` no model `Appointment` para preservar horário local (`America/Sao_Paulo`) no JSON em vez de converter para UTC. |
