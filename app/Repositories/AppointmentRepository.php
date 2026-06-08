@@ -26,13 +26,14 @@ class AppointmentRepository implements AppointmentRepositoryInterface
             ->get();
     }
 
-    public function hasConflict(int $employeeId, int $serviceId, string $startsAt, string $endsAt): bool
+    public function hasConflict(int $employeeId, int $serviceId, string $startsAt, string $endsAt, ?int $excludeId = null): bool
     {
         return Appointment::where('employee_id', $employeeId)
             ->where('service_id', $serviceId)
             ->where('status', '!=', 'canceled')
             ->where('starts_at', '<', $endsAt)
             ->where('ends_at', '>', $startsAt)
+            ->when($excludeId, fn ($q) => $q->where('id', '!=', $excludeId))
             ->exists();
     }
 

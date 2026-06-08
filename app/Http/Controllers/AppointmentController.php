@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreAppointmentRequest;
+use App\Http\Requests\UpdateAppointmentRequest;
 use App\Models\Appointment;
 use App\Models\Client;
 use App\Models\Employee;
@@ -51,6 +52,22 @@ class AppointmentController extends Controller
         $appointment = $service->create($request->validated());
 
         return redirect()->route('dashboard')->with('success', 'Agendamento criado com sucesso.');
+    }
+
+    public function edit(Appointment $appointment)
+    {
+        return Inertia::render('Appointments/Edit', [
+            'appointment' => $appointment->load(['client', 'employee', 'service']),
+            'services'    => Service::where('active', true)->get(['id', 'name', 'price', 'duration_minutes']),
+            'employees'   => Employee::where('active', true)->get(['id', 'name', 'role']),
+        ]);
+    }
+
+    public function update(UpdateAppointmentRequest $request, Appointment $appointment, AppointmentService $service)
+    {
+        $service->update($appointment, $request->validated());
+
+        return redirect()->route('appointments.index')->with('success', 'Agendamento atualizado com sucesso.');
     }
 
     public function destroy(Appointment $appointment)

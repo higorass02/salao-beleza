@@ -18,7 +18,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('services', ServiceController::class)->except(['show']);
     Route::get('clients/search', [ClientController::class, 'search'])->name('clients.search');
     Route::resource('clients', ClientController::class)->except(['show']);
-    Route::resource('appointments', AppointmentController::class)->only(['index', 'store', 'destroy']);
+    Route::resource('appointments', AppointmentController::class)->only(['index', 'store', 'edit', 'update', 'destroy']);
 
     // Fechamento de caixa diário
     Route::prefix('cash')->name('cash.')->group(function () {

@@ -21,8 +21,8 @@ class Appointment extends Model
     ];
 
     protected $casts = [
-        'starts_at' => 'datetime',
-        'ends_at' => 'datetime',
+        'starts_at' => 'datetime:Y-m-d H:i:s',
+        'ends_at'   => 'datetime:Y-m-d H:i:s',
     ];
 
     public function client()

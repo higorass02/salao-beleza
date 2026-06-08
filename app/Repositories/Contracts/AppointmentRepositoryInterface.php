@@ -11,7 +11,7 @@ interface AppointmentRepositoryInterface
 
     public function getForCalendar(string $from, string $to);
 
-    public function hasConflict(int $employeeId, int $serviceId, string $startsAt, string $endsAt): bool;
+    public function hasConflict(int $employeeId, int $serviceId, string $startsAt, string $endsAt, ?int $excludeId = null): bool;
 
     public function findService(int $id): Service;
 
