@@ -19,6 +19,12 @@
       :employees="employees"
       @close="showModal = false"
     />
+
+    <AppointmentDetailModal
+      v-if="selectedAppointment"
+      :appointment="selectedAppointment"
+      @close="selectedAppointment = null"
+    />
   </Layout>
 </template>
 
@@ -26,6 +32,7 @@
 import { ref, onMounted } from 'vue';
 import Layout from '@/Layouts/AdminLayout.vue';
 import AppointmentModal from './AppointmentModal.vue';
+import AppointmentDetailModal from './AppointmentDetailModal.vue';
 
 const props = defineProps({
   appointments:       { type: Array,  default: () => [] },
@@ -39,6 +46,8 @@ const showModal = ref(false);
 const selectedDate = ref(null);
 const selectedTime = ref(null);
 const calendarContainer = ref(null);
+
+const selectedAppointment = ref(null);
 
 onMounted(async () => {
   const { Calendar } = await import('@fullcalendar/core');
@@ -68,6 +77,10 @@ onMounted(async () => {
       backgroundColor: '#f43f5e',
       borderColor: '#e11d48',
     })),
+    eventClick(info) {
+      const id = Number(info.event.id);
+      selectedAppointment.value = props.appointments.find((a) => a.id === id) ?? null;
+    },
     dateClick(info) {
       selectedDate.value = info.dateStr.split('T')[0];
       selectedTime.value = (info.dateStr.split('T')[1] ?? '').slice(0, 5) || '08:00';
