@@ -142,7 +142,8 @@ salao-agendamento/
 ├── app/
 │   ├── Actions/
 │   │   └── Appointment/
-│   │       └── CreateAppointmentAction.php
+│   │       ├── CreateAppointmentAction.php
+│   │       └── UpdateAppointmentAction.php   # valida conflito excluindo o próprio registro
 │   ├── Http/
 │   │   ├── Controllers/
 │   │   │   ├── EmployeeController.php
@@ -151,27 +152,31 @@ salao-agendamento/
 │   │   │   ├── AppointmentController.php
 │   │   │   └── Controller.php
 │   │   ├── Middleware/
-│   │   │   └── HandleInertiaRequests.php
+│   │   │   └── HandleInertiaRequests.php     # compartilha auth.user.is_admin via Inertia
 │   │   └── Requests/
-│   │       ├── Employee/{Store,Update}EmployeeRequest.php
-│   │       ├── Service/{Store,Update}ServiceRequest.php
-│   │       ├── Client/{Store,Update}ClientRequest.php
-│   │       └── Appointment/{Store,Update}AppointmentRequest.php
+│   │       ├── StoreEmployeeRequest.php
+│   │       ├── UpdateEmployeeRequest.php
+│   │       ├── StoreServiceRequest.php
+│   │       ├── UpdateServiceRequest.php
+│   │       ├── StoreClientRequest.php
+│   │       ├── UpdateClientRequest.php
+│   │       ├── StoreAppointmentRequest.php
+│   │       └── UpdateAppointmentRequest.php  # inclui campo status
 │   ├── Models/
-│   │   ├── User.php            # usuários internos (admin) — vem do Breeze
+│   │   ├── User.php            # campo is_admin (boolean) — controla acesso a edição
 │   │   ├── Employee.php
 │   │   ├── Service.php
 │   │   ├── Client.php
-│   │   └── Appointment.php
+│   │   └── Appointment.php     # casts datetime:Y-m-d H:i:s (preserva timezone local)
 │   ├── Repositories/
 │   │   ├── Contracts/
 │   │   │   └── AppointmentRepositoryInterface.php
-│   │   └── AppointmentRepository.php
+│   │   └── AppointmentRepository.php         # hasConflict aceita ?int $excludeId
 │   ├── Services/
 │   │   ├── EmployeeService.php
 │   │   ├── ServiceService.php
 │   │   ├── ClientService.php
-│   │   └── AppointmentService.php
+│   │   └── AppointmentService.php            # métodos: create, update, listUpcoming, listForCalendar
 │   └── Exceptions/
 │       └── AppointmentConflictException.php
 │
@@ -198,9 +203,12 @@ salao-agendamento/
 │           │   ├── Index.vue
 │           │   ├── Create.vue
 │           │   └── Edit.vue
+│           ├── Appointments/
+│           │   └── Edit.vue                  # edição de agendamento (apenas admin)
 │           └── Calendar/
-│               ├── Index.vue          # calendário estilo Google Agenda
-│               └── AppointmentModal.vue
+│               ├── Index.vue                 # calendário estilo Google Agenda
+│               ├── AppointmentModal.vue      # criação via clique no calendário
+│               └── AppointmentDetailModal.vue # detalhes + botão Editar (admin)
 │
 ├── routes/
 │   ├── web.php                 # todas as rotas (Inertia)
@@ -217,6 +225,18 @@ salao-agendamento/
 ---
 
 ## 🗄 Modelagem de Dados
+
+### Tabela `users` (usuários internos)
+| Coluna | Tipo | Notas |
+|---|---|---|
+| id | bigint PK | |
+| name | string | |
+| email | string unique | |
+| **is_admin** | boolean | default false — controla acesso à edição de agendamentos |
+| password | string | hashed |
+| timestamps | | |
+
+> O seeder `AdminUserSeeder` cria/mantém o usuário `admin@salao.com` com `is_admin = true`. O campo `is_admin` é compartilhado via `HandleInertiaRequests` em `auth.user.is_admin` para todos os componentes Vue.
 
 ### Tabela `employees` (funcionários)
 | Coluna | Tipo | Notas |
@@ -259,6 +279,8 @@ salao-agendamento/
 | service_id | FK → services | |
 | starts_at | datetime | data + horário de início |
 | ends_at | datetime | calculado: `starts_at + duration_minutes` |
+
+> **Cast importante:** `starts_at` e `ends_at` usam cast `datetime:Y-m-d H:i:s` no model. Isso serializa no formato `"YYYY-MM-DD HH:mm:ss"` respeitando o `APP_TIMEZONE` (`America/Sao_Paulo`), evitando que o JSON converta para UTC e quebre a exibição na tela de edição.
 | status | enum | `scheduled`, `done`, `canceled` (default `scheduled`) |
 | notes | text nullable | |
 | timestamps | | |
@@ -276,10 +298,11 @@ salao-agendamento/
 ## 🗓 Tela de Agendamento (estilo Google Agenda)
 
 ### Comportamento
-- Calendário em visão **semana/dia/mês** usando **FullCalendar** (`@fullcalendar/vue3`).
-- Clicar em um **dia ou slot de horário** abre o componente `AppointmentModal.vue`.
-- Eventos existentes aparecem no calendário coloridos por funcionário.
-- Arrastar/redimensionar evento (opcional, fase 2) → revalida RN-01.
+- Calendário em visão **semana/dia** usando **FullCalendar** (`@fullcalendar/vue3`).
+- Clicar em um **slot vazio** abre `AppointmentModal.vue` (criação).
+- Clicar em um **evento existente** abre `AppointmentDetailModal.vue` (detalhes).
+- Eventos carregados via `AppointmentRepository::getForCalendar()` com janela de **4 semanas atrás → 8 semanas à frente** (evita filtro `>= now()` que ocultava agendamentos do dia).
+- Arrastar/redimensionar evento (opcional, fase 2) → revalida conflito.
 
 ### Campos do modal `AppointmentModal.vue`
 | Campo | Componente | Comportamento |
@@ -300,7 +323,13 @@ salao-agendamento/
 5. Conflito → `AppointmentConflictException` vira erro de validação 422 → Inertia popula `errors` → modal exibe a mensagem inline.
 6. Sucesso → Inertia recarrega os eventos do calendário (props da página) e fecha o modal.
 
-> 💡 A busca de clientes do `ClientSearchInput` pode usar uma rota leve (`clients.search`) que retorna JSON simples, ou o helper de partial reload do Inertia. Não exige uma API REST completa.
+> 💡 A busca de clientes usa a rota leve `GET /clients/search?q=` que retorna JSON simples — sem API REST completa.
+
+### Modal de detalhes `AppointmentDetailModal.vue`
+Aberto ao clicar num evento do calendário. Exibe: status (badge colorido), horário início–fim, cliente (nome + telefone), serviço (nome, duração, preço), funcionário (nome, cargo) e observações. Footer com botão **Editar** visível apenas quando `auth.user.is_admin === true`.
+
+### Tela de edição `Appointments/Edit.vue`
+Acessada via botão Editar do `AppointmentDetailModal`. Formulário pré-preenchido com todos os campos do agendamento original. Campos editáveis: data, horário, serviço, funcionário, cliente (com busca), status (`scheduled` / `done` / `canceled`) e observações. Ao salvar, executa `UpdateAppointmentAction` que recalcula `ends_at` e valida conflito de horário **excluindo o próprio agendamento** da checagem (`hasConflict(..., $excludeId)`). Redireciona para a agenda após sucesso.
 
 ---
 
@@ -313,7 +342,7 @@ salao-agendamento/
 | `nginx` | nginx:alpine | `8080:80` | Servidor web |
 | `mysql` | mysql:8.0 | `3306:3306` | Banco de dados |
 | `phpmyadmin` | phpmyadmin:latest | `8081:80` | Admin do MySQL |
-| `node` | node:20-alpine | `5173:5173` | Vite dev server (opcional) |
+| `node` | node:24-alpine | `5173:5173` | Vite dev server (opcional) |
 
 ### Variáveis de ambiente (`.env`)
 ```
@@ -451,3 +480,8 @@ Frases curtas que você pode usar comigo (Claude) para avançar no projeto. Cada
 | 2026-05-27 | Criação do documento mestre: stack, MVCS, design patterns, modelagem, RN-01 a RN-05, Docker, roadmap. |
 | 2026-05-27 | Definições do usuário aplicadas: autenticação via **Laravel Breeze (stack Vue/Inertia)** no lugar de Sanctum; API REST tirada do escopo atual (foco no admin web); duração do serviço definida na tela de cadastro pelo admin. Estrutura de pastas, rotas e roadmap reescritos para o padrão Inertia. |
 | 2026-05-29 | Seção "Regras de Negócio" removida do documento. |
+| 2026-06-08 | Atualização de infra: Node.js 20 → 24 no Docker e CI. |
+| 2026-06-08 | Fix calendário: substituído `getUpcoming()` (>= now) por `getForCalendar($from, $to)` com janela de datas — agendamentos do dia não desaparecem mais. |
+| 2026-06-08 | Novo: `AppointmentDetailModal.vue` — clique no evento do calendário abre detalhes. |
+| 2026-06-08 | Novo: edição de agendamento — `UpdateAppointmentAction`, `UpdateAppointmentRequest`, `Appointments/Edit.vue`, rotas `edit`/`update`. Botão Editar visível apenas para admins (`is_admin`). |
+| 2026-06-08 | Fix serialização: cast `datetime:Y-m-d H:i:s` no model `Appointment` para preservar horário local (`America/Sao_Paulo`) no JSON em vez de converter para UTC. |
