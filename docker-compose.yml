@@ -68,7 +68,7 @@ services:
       - salao_network
 
   node:
-    image: node:20-alpine
+    image: node:24-alpine
     container_name: salao_node
     working_dir: /var/www/html
     volumes:
