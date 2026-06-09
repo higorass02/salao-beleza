@@ -46,6 +46,29 @@
           </svg>
           <span v-if="isClosed">Caixa fechado em {{ formatDateTime(dailyClosing?.closed_at) }}</span>
           <span v-else>Caixa em aberto — {{ formattedDate }}</span>
+          <div class="ml-auto flex items-center gap-2">
+            <button
+              v-if="isClosed"
+              type="button"
+              class="inline-flex items-center gap-1.5 rounded-lg border border-current/30 px-3 py-1.5 text-xs font-medium opacity-80 hover:opacity-100 transition-opacity"
+              @click="reopenDay"
+            >
+              <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5V6.75a4.5 4.5 0 1 1 9 0v3.75M3.75 21.75h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H3.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+              </svg>
+              Revisar
+            </button>
+            <button
+              type="button"
+              class="inline-flex items-center gap-1.5 rounded-lg border border-current/30 px-3 py-1.5 text-xs font-medium opacity-80 hover:opacity-100 transition-opacity"
+              @click="showSummaryModal = true"
+            >
+              <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z" />
+              </svg>
+              Ver Resumo
+            </button>
+          </div>
         </div>
 
         <!-- Summary cards -->
@@ -117,7 +140,7 @@
                   <td class="px-4 py-3 text-sm font-medium text-gray-900">{{ fmt(item.service_value) }}</td>
                   <td class="px-4 py-3">
                     <select
-                      v-if="!isClosed"
+                      v-if="!isClosed && !providerClosings[item.employee_id]"
                       :value="item.paid_to"
                       class="block rounded-lg border border-gray-300 px-2 py-1 text-xs focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
                       @change="updatePaidTo(item, $event.target.value)"
@@ -167,7 +190,29 @@
                 <span class="text-sm font-semibold text-gray-900">{{ emp.name }}</span>
                 <span class="text-xs text-gray-400">· {{ emp.count }} atendimento(s)</span>
               </div>
-              <span class="text-sm font-medium text-gray-700">{{ fmt(emp.totalServices) }}</span>
+              <div class="flex items-center gap-3">
+                <span class="text-sm font-medium text-gray-700">{{ fmt(emp.totalServices) }}</span>
+                <!-- Badge de fechado -->
+                <span v-if="emp.closing" class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
+                  <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                  Fechado {{ emp.closing.closed_at }}
+                </span>
+                <!-- Botão fechar -->
+                <button
+                  v-else-if="!isClosed && emp.id !== 'manual'"
+                  type="button"
+                  :disabled="emp.pendingValue > 0"
+                  :title="emp.pendingValue > 0 ? 'Preencha todos os campos \'Para quem foi pago\' antes de fechar' : ''"
+                  class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium transition-colors"
+                  :class="emp.pendingValue > 0
+                    ? 'cursor-not-allowed bg-gray-100 text-gray-400'
+                    : 'bg-slate-800 text-white hover:bg-slate-700'"
+                  @click="emp.pendingValue === 0 && (providerCloseTarget = emp)"
+                >
+                  <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
+                  Fechar caixa
+                </button>
+              </div>
             </div>
 
             <!-- Linha de distribuição -->
@@ -265,6 +310,202 @@
       </template>
     </div>
 
+    <!-- Modal: resumo do dia -->
+    <div v-if="showSummaryModal" class="fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4">
+      <div class="w-full max-w-2xl rounded-xl bg-white shadow-xl max-h-[90vh] flex flex-col">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4 shrink-0">
+          <div>
+            <h3 class="text-base font-semibold text-gray-900">Resumo do dia</h3>
+            <p class="text-xs text-gray-500">{{ formattedDate }}</p>
+          </div>
+          <button type="button" class="text-gray-400 hover:text-gray-600" @click="showSummaryModal = false">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="overflow-y-auto p-6 space-y-5">
+
+          <!-- Cards de totais -->
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+              <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Total geral</p>
+              <p class="mt-1 text-xl font-bold text-gray-900">{{ fmt(summary.total_value) }}</p>
+            </div>
+            <div class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+              <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Prestadores</p>
+              <p class="mt-1 text-xl font-bold text-emerald-600">{{ fmt(summary.provider_total) }}</p>
+            </div>
+            <div class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+              <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Casa</p>
+              <p class="mt-1 text-xl font-bold text-blue-600">{{ fmt(summary.store_total) }}</p>
+            </div>
+            <div class="rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
+              <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Taxa ({{ houseRate }}%)</p>
+              <p class="mt-1 text-xl font-bold text-violet-600">{{ fmt(summary.house_fee_total) }}</p>
+            </div>
+          </div>
+
+          <!-- Acerto por prestador -->
+          <div v-if="byEmployee.length > 0" class="space-y-3">
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Acerto por prestador</p>
+            <div
+              v-for="emp in byEmployee"
+              :key="emp.id"
+              class="overflow-hidden rounded-xl border border-gray-200 bg-white"
+            >
+              <div class="flex items-center justify-between bg-gray-50 px-4 py-2.5 border-b border-gray-100">
+                <div class="flex items-center gap-2">
+                  <div class="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-xs font-semibold text-emerald-700">
+                    {{ emp.name?.[0]?.toUpperCase() }}
+                  </div>
+                  <span class="text-sm font-semibold text-gray-900">{{ emp.name }}</span>
+                  <span class="text-xs text-gray-400">· {{ emp.count }} atend.</span>
+                </div>
+                <span class="text-sm font-medium text-gray-700">{{ fmt(emp.totalServices) }}</span>
+              </div>
+
+              <div class="grid grid-cols-3 divide-x divide-gray-100 text-sm">
+                <div class="px-4 py-2.5">
+                  <p class="text-xs text-gray-400">Taxa da casa ({{ houseRate }}%)</p>
+                  <p class="font-medium text-violet-600">{{ fmt(emp.taxaCasa) }}</p>
+                </div>
+                <div class="px-4 py-2.5">
+                  <p class="text-xs text-gray-400">Parte do prestador</p>
+                  <p class="font-medium text-emerald-600">{{ fmt(emp.partePrestador) }}</p>
+                </div>
+                <div class="px-4 py-2.5">
+                  <p class="text-xs text-gray-400">Pendente</p>
+                  <p :class="emp.pendingValue > 0 ? 'text-amber-600 font-medium' : 'text-gray-400'">{{ fmt(emp.pendingValue) }}</p>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 divide-x divide-gray-100 border-t border-gray-100 text-sm">
+                <div class="px-4 py-2.5">
+                  <p class="text-xs text-gray-400">Pago ao prestador</p>
+                  <p class="font-medium text-gray-900">{{ fmt(emp.recebidoPeloPrestador) }}</p>
+                </div>
+                <div class="px-4 py-2.5">
+                  <p class="text-xs text-gray-400">Pago à casa</p>
+                  <p class="font-medium text-gray-900">{{ fmt(emp.recebidoPelaCasa) }}</p>
+                </div>
+              </div>
+
+              <div
+                class="border-t px-4 py-2.5 flex items-center justify-between text-sm font-semibold"
+                :class="emp.pendingValue > 0
+                  ? 'bg-amber-50 border-amber-200 text-amber-700'
+                  : emp.net > 0  ? 'bg-blue-50 border-blue-200 text-blue-700'
+                  : emp.net < 0  ? 'bg-rose-50 border-rose-200 text-rose-700'
+                  : 'bg-emerald-50 border-emerald-200 text-emerald-700'"
+              >
+                <span>
+                  {{ emp.pendingValue > 0 ? '⏳ Há pendências'
+                    : emp.net > 0  ? '🏠 Casa deve ao prestador'
+                    : emp.net < 0  ? '⚠️ Prestador deve à casa'
+                    : '✓ Acertado' }}
+                </span>
+                <span v-if="emp.net !== 0 && emp.pendingValue === 0" class="text-base font-bold">
+                  {{ fmt(Math.abs(emp.net)) }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="flex items-center justify-between border-t border-gray-100 px-6 py-4 shrink-0">
+          <button
+            v-if="isClosed"
+            type="button"
+            class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            @click="recalculateDay"
+          >
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+            </svg>
+            Recalcular
+          </button>
+          <span v-else />
+          <button type="button" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" @click="showSummaryModal = false">
+            Fechar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: fechar caixa do prestador -->
+    <div v-if="providerCloseTarget" class="fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4">
+      <div class="w-full max-w-md rounded-xl bg-white shadow-xl">
+        <div class="flex items-center justify-between border-b border-gray-200 px-6 py-4">
+          <div>
+            <h3 class="text-base font-semibold text-gray-900">Fechar caixa — {{ providerCloseTarget.name }}</h3>
+            <p class="text-xs text-gray-500">{{ formattedDate }}</p>
+          </div>
+          <button type="button" class="text-gray-400 hover:text-gray-600" @click="providerCloseTarget = null">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+
+        <div class="space-y-1 p-6">
+          <div class="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+            <span class="text-gray-500">Total de serviços</span>
+            <span class="text-right font-medium text-gray-900">{{ fmt(providerCloseTarget.totalServices) }}</span>
+
+            <span class="text-gray-500">Taxa da casa ({{ houseRate }}%)</span>
+            <span class="text-right font-medium text-violet-600">{{ fmt(providerCloseTarget.taxaCasa) }}</span>
+
+            <span class="text-gray-500">Parte do prestador</span>
+            <span class="text-right font-medium text-emerald-600">{{ fmt(providerCloseTarget.partePrestador) }}</span>
+
+            <span class="col-span-2 border-t border-gray-100 pt-2 text-gray-400 text-xs uppercase tracking-wide">Fluxo físico</span>
+
+            <span class="text-gray-500">Pago ao prestador</span>
+            <span class="text-right font-medium text-gray-900">{{ fmt(providerCloseTarget.recebidoPeloPrestador) }}</span>
+
+            <span class="text-gray-500">Pago à casa</span>
+            <span class="text-right font-medium text-gray-900">{{ fmt(providerCloseTarget.recebidoPelaCasa) }}</span>
+          </div>
+
+          <!-- Resultado do acerto -->
+          <div
+            class="mt-3 rounded-lg px-4 py-3 text-sm font-semibold flex items-center justify-between"
+            :class="providerCloseTarget.net > 0
+              ? 'bg-blue-50 text-blue-700'
+              : providerCloseTarget.net < 0
+                ? 'bg-rose-50 text-rose-700'
+                : 'bg-emerald-50 text-emerald-700'"
+          >
+            <span>
+              {{ providerCloseTarget.net > 0 ? '🏠 Casa deve ao prestador'
+                : providerCloseTarget.net < 0 ? '⚠️ Prestador deve à casa'
+                : '✓ Acertado' }}
+            </span>
+            <span v-if="providerCloseTarget.net !== 0" class="text-lg font-bold">
+              {{ fmt(Math.abs(providerCloseTarget.net)) }}
+            </span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 border-t border-gray-100 px-6 py-4">
+          <button type="button" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors" @click="providerCloseTarget = null">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="inline-flex items-center gap-2 rounded-lg bg-slate-800 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 transition-colors"
+            @click="confirmCloseProvider"
+          >
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>
+            Confirmar fechamento
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Add entry modal -->
     <div v-if="showAddModal" class="fixed inset-0 z-40 flex items-center justify-center bg-black/50 p-4">
       <div class="w-full max-w-md rounded-xl bg-white shadow-xl">
@@ -339,17 +580,20 @@ import { Link, router, useForm } from '@inertiajs/vue3';
 import Layout from '@/Layouts/AdminLayout.vue';
 
 const props = defineProps({
-  date:         { type: String, default: null },
-  dailyClosing: { type: Object, default: null },
-  appointments: { type: Array,  default: () => [] },
-  entries:      { type: Array,  default: () => [] },
-  preview:      { type: Object, default: null },
-  settings:     { type: Object, default: () => ({}) },
+  date:             { type: String, default: null },
+  dailyClosing:     { type: Object, default: null },
+  appointments:     { type: Array,  default: () => [] },
+  entries:          { type: Array,  default: () => [] },
+  preview:          { type: Object, default: null },
+  settings:         { type: Object, default: () => ({}) },
+  providerClosings: { type: Object, default: () => ({}) },
 });
 
 const today = new Date().toISOString().split('T')[0];
-const selectedDate = ref(props.date ?? today);
-const showAddModal  = ref(false);
+const selectedDate        = ref(props.date ?? today);
+const showAddModal        = ref(false);
+const showSummaryModal    = ref(false);
+const providerCloseTarget = ref(null); // { id, name, ...emp } — abre modal de confirmação
 
 // Armazena atualizações de paid_to localmente para resposta imediata
 const localPaidTo = ref({});
@@ -391,15 +635,14 @@ const summary = computed(() => {
     };
   }
 
-  let total = 0, providerSum = 0, storeSum = 0, feeSum = 0;
+  let total = 0, providerSum = 0, storeSum = 0;
   for (const item of allItems.value) {
     const base = parseFloat(item.service_value ?? 0);
-    const fee  = item.include_house_fee ? base * houseRate.value / 100 : 0;
-    total      += base + fee;
-    providerSum += base;
-    storeSum    += fee;
-    feeSum      += fee;
+    total += base;
+    if (item.paid_to === 'provider') providerSum += base;
+    else if (item.paid_to === 'store') storeSum  += base;
   }
+  const feeSum = total * houseRate.value / 100;
   return {
     total_value:     parseFloat(total.toFixed(2)),
     provider_total:  parseFloat(providerSum.toFixed(2)),
@@ -451,7 +694,7 @@ const byEmployee = computed(() => {
 
     const emp = map.get(empId);
     const val = parseFloat(item.service_value ?? 0);
-    const taxa = item.include_house_fee ? val * rate : 0;
+    const taxa = val * rate;
     const parteProvider = val - taxa;
 
     emp.count++;
@@ -470,11 +713,14 @@ const byEmployee = computed(() => {
     }
   }
 
-  return Array.from(map.values()).map(emp => ({
-    ...emp,
-    // positivo → casa deve ao prestador | negativo → prestador deve à casa
-    net: parseFloat((emp.casaDevePrestador - emp.prestadorDeveCasa).toFixed(2)),
-  }));
+  return Array.from(map.values()).map(emp => {
+    const closing = emp.id !== 'manual' ? (props.providerClosings[emp.id] ?? null) : null;
+    return {
+      ...emp,
+      net: parseFloat((emp.casaDevePrestador - emp.prestadorDeveCasa).toFixed(2)),
+      closing,
+    };
+  });
 });
 
 function fmt(value) {
@@ -513,9 +759,26 @@ function removeEntry(id) {
   router.delete(`/cash/daily/${props.date}/entries/${id}`);
 }
 
+function reopenDay() {
+  router.post(`/cash/daily/${props.date}/reopen`, {}, { preserveScroll: true });
+}
+
+function recalculateDay() {
+  router.post(`/cash/daily/${props.date}/recalculate`, {}, { preserveScroll: true });
+}
+
 function confirmClose() {
   if (!confirm(`Fechar o caixa de ${formattedDate.value}? Esta ação não pode ser desfeita.`)) return;
   router.post(`/cash/daily/${props.date}/close`);
+}
+
+function confirmCloseProvider() {
+  if (!providerCloseTarget.value) return;
+  router.post(
+    `/cash/daily/${props.date}/providers/${providerCloseTarget.value.id}/close`,
+    {},
+    { preserveScroll: true, onSuccess: () => { providerCloseTarget.value = null; } }
+  );
 }
 
 // Entry form

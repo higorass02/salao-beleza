@@ -150,6 +150,8 @@ salao-agendamento/
 │   │   │   ├── ServiceController.php
 │   │   │   ├── ClientController.php
 │   │   │   ├── AppointmentController.php
+│   │   │   ├── CashClosingController.php     # fechamento diário: show, storeEntry, updatePaidTo, closeDay, closeProvider
+│   │   │   ├── WeeklyClosingController.php   # fechamento semanal: index, recalculate, close
 │   │   │   └── Controller.php
 │   │   ├── Middleware/
 │   │   │   └── HandleInertiaRequests.php     # compartilha auth.user.is_admin via Inertia
@@ -163,11 +165,16 @@ salao-agendamento/
 │   │       ├── StoreAppointmentRequest.php
 │   │       └── UpdateAppointmentRequest.php  # inclui campo status
 │   ├── Models/
-│   │   ├── User.php            # campo is_admin (boolean) — controla acesso a edição
+│   │   ├── User.php                    # campo is_admin (boolean) — controla acesso a edição
 │   │   ├── Employee.php
 │   │   ├── Service.php
 │   │   ├── Client.php
-│   │   └── Appointment.php     # casts datetime:Y-m-d H:i:s (preserva timezone local)
+│   │   ├── Appointment.php             # casts datetime:Y-m-d H:i:s (preserva timezone local)
+│   │   ├── CashEntry.php               # entradas manuais no caixa
+│   │   ├── DailyClosing.php            # fechamento diário (totais consolidados)
+│   │   ├── ProviderDailyClosing.php    # fechamento por prestador num dia
+│   │   ├── WeeklyClosing.php           # fechamento semanal
+│   │   └── Setting.php                 # configurações gerais (ex: house_fee_rate)
 │   ├── Repositories/
 │   │   ├── Contracts/
 │   │   │   └── AppointmentRepositoryInterface.php
@@ -176,7 +183,8 @@ salao-agendamento/
 │   │   ├── EmployeeService.php
 │   │   ├── ServiceService.php
 │   │   ├── ClientService.php
-│   │   └── AppointmentService.php            # métodos: create, update, listUpcoming, listForCalendar
+│   │   ├── AppointmentService.php            # métodos: create, update, listUpcoming, listForCalendar
+│   │   └── CashClosingService.php            # computeDay, closeDay, closeProvider, computeWeekProviders, closeWeek
 │   └── Exceptions/
 │       └── AppointmentConflictException.php
 │
@@ -205,6 +213,9 @@ salao-agendamento/
 │           │   └── Edit.vue
 │           ├── Appointments/
 │           │   └── Edit.vue                  # edição de agendamento (apenas admin)
+│           ├── Cash/
+│           │   ├── Daily.vue                 # fechamento diário: lista de itens, resumo, acerto por prestador
+│           │   └── Weekly.vue                # fechamento semanal: tabela de dias + acerto por prestador
 │           └── Calendar/
 │               ├── Index.vue                 # calendário estilo Google Agenda
 │               ├── AppointmentModal.vue      # criação via clique no calendário
@@ -287,11 +298,74 @@ salao-agendamento/
 
 **Índice composto recomendado:** `(employee_id, service_id, starts_at)` para acelerar a checagem de conflito.
 
+### Tabela `cash_entries` (entradas manuais de caixa)
+| Coluna | Tipo | Notas |
+|---|---|---|
+| id | bigint PK | |
+| date | date | dia da entrada |
+| client_name | string nullable | |
+| service_name | string | |
+| service_value | decimal(10,2) | |
+| include_house_fee | boolean | default false |
+| paid_to | enum nullable | `provider`, `store` |
+| performed_at | time | horário do serviço |
+| timestamps | | |
+
+### Tabela `daily_closings` (fechamento diário)
+| Coluna | Tipo | Notas |
+|---|---|---|
+| id | bigint PK | |
+| date | date unique | |
+| status | string | `open`, `closed` |
+| total_value | decimal(10,2) | |
+| provider_total | decimal(10,2) | soma onde `paid_to = 'provider'` |
+| store_total | decimal(10,2) | soma onde `paid_to = 'store'` |
+| house_fee_total | decimal(10,2) | total × taxa% |
+| closed_at | datetime nullable | |
+| timestamps | | |
+
+### Tabela `provider_daily_closings` (fechamento por prestador)
+| Coluna | Tipo | Notas |
+|---|---|---|
+| id | bigint PK | |
+| date | date | |
+| employee_id | FK → employees | unique com date |
+| total_services | decimal(10,2) | soma dos serviços do prestador |
+| house_fee | decimal(10,2) | taxa esperada |
+| provider_share | decimal(10,2) | total − taxa |
+| received_by_provider | decimal(10,2) | `paid_to = 'provider'` |
+| received_by_store | decimal(10,2) | `paid_to = 'store'` |
+| net | decimal(10,2) | saldo (positivo = casa deve prestador) |
+| closed_at | datetime | |
+| timestamps | | |
+
+> **Unique:** `(date, employee_id)` — um prestador só pode ter um fechamento por dia.
+
+### Tabela `weekly_closings` (fechamento semanal)
+| Coluna | Tipo | Notas |
+|---|---|---|
+| id | bigint PK | |
+| week_start | date unique | segunda-feira |
+| week_end | date | domingo |
+| total_value | decimal(10,2) | |
+| provider_total | decimal(10,2) | |
+| store_total | decimal(10,2) | |
+| house_fee_total | decimal(10,2) | |
+| days_summary | json | snapshot dos fechamentos diários |
+| closed_at | datetime | |
+| timestamps | | |
+
+### Tabela `settings` (configurações)
+| Chave | Exemplo | Uso |
+|---|---|---|
+| `house_fee_rate` | `30` | Percentual da taxa de serviço da casa (inteiro, dividido por 100 no código) |
+
 ### Relacionamentos
 - `Employee` hasMany `Appointment`
 - `Service` hasMany `Appointment`
 - `Client` hasMany `Appointment`
 - `Appointment` belongsTo `Client`, `Employee`, `Service`
+- `Employee` hasMany `ProviderDailyClosing`
 
 ---
 
@@ -341,6 +415,46 @@ Aberto ao clicar num evento do calendário. Exibe: status (badge colorido), hor�
 
 ### Tela de edição `Appointments/Edit.vue`
 Acessada via botão Editar do `AppointmentDetailModal`. Formulário pré-preenchido com todos os campos do agendamento original. Campos editáveis: data, horário, serviço, funcionário, cliente (com busca), status (`scheduled` / `done` / `canceled`) e observações. Ao salvar, executa `UpdateAppointmentAction` que recalcula `ends_at` e valida conflito de horário **excluindo o próprio agendamento** da checagem (`hasConflict(..., $excludeId)`). Redireciona para a agenda após sucesso.
+
+---
+
+## 💰 Fechamento de Caixa
+
+### Visão geral
+Sistema de controle financeiro diário e semanal, integrado aos agendamentos.
+
+### Fechamento Diário (`Cash/Daily.vue`)
+- Exibe todos os **agendamentos** e **entradas manuais** do dia selecionado.
+- Para cada item, o usuário define **Pago a** (`provider` ou `store`) via `<select>`.
+- Ao alterar o select, a API atualiza `paid_to` no banco (PATCH/PUT por item); o frontend atualiza os cards de resumo reativamente via computed.
+- **Cards de resumo** (atualizados instantaneamente ao mudar o select):
+  - **Para prestadores** — soma dos itens com `paid_to = 'provider'`
+  - **Para a casa** — soma dos itens com `paid_to = 'store'`
+  - **Taxa de serviço** — `total_geral × house_fee_rate%`
+  - **Total geral** — soma de todos os `service_value`
+- **Acerto por prestador** — card individual por funcionário com: taxa, parte do prestador, pago ao prestador, pago à casa, saldo.
+- Botão **Fechar caixa** por prestador — só habilitado quando todos os itens do prestador têm `paid_to` definido. Abre modal de confirmação com resumo completo. Persiste em `provider_daily_closings`.
+- Botão **Fechar dia** — fecha o `DailyClosing` do dia (bloqueia edições).
+
+### Fechamento Semanal (`Cash/Weekly.vue`)
+- Navegação por semana (anterior / atual / próxima).
+- **Tabela de dias** — uma linha por dia com: Total, Prestadores, Casa, Taxas.
+  - Os valores das colunas são **calculados esperados** (baseados na taxa configurada), não no `paid_to` real:
+    - `provider_total = total − house_fee`
+    - `store_total = house_fee`
+    - `house_fee_total = total × taxa%`
+  - Isso é derivado no `WeeklyClosingController` a partir do `computeDay()`.
+- **Modal "Ver Resumo / Fechar semana"** — exibe: resumo da casa (taxas totais, recebido pela casa, pendências) + acerto por prestador (semana inteira via `computeWeekProviders`).
+- Botão **Recalcular** — disponível quando a semana já está fechada; recalcula os totais do `WeeklyClosing` sem alterar o status.
+
+### `CashClosingService` — métodos principais
+| Método | O que faz |
+|---|---|
+| `computeDay(date)` | Calcula totais do dia: total, provider (paid_to), store (paid_to), house_fee (total×taxa) |
+| `closeDay(date)` | Persiste `DailyClosing` com status `closed` |
+| `closeProvider(date, employeeId)` | Calcula e persiste `ProviderDailyClosing` para o prestador |
+| `computeWeekProviders(start, end)` | Agrega agendamentos da semana por prestador (para o modal semanal) |
+| `closeWeek(weekStart)` | Persiste `WeeklyClosing` consolidando os `DailyClosing` da semana |
 
 ---
 
@@ -498,3 +612,7 @@ Frases curtas que você pode usar comigo (Claude) para avançar no projeto. Cada
 | 2026-06-08 | Novo: busca de cliente com autocomplete no calendário — alinhada à esquerda, filtro acumulativo com prestador. |
 | 2026-06-08 | Novo: edição de agendamento — `UpdateAppointmentAction`, `UpdateAppointmentRequest`, `Appointments/Edit.vue`, rotas `edit`/`update`. Botão Editar visível apenas para admins (`is_admin`). |
 | 2026-06-08 | Fix serialização: cast `datetime:Y-m-d H:i:s` no model `Appointment` para preservar horário local (`America/Sao_Paulo`) no JSON em vez de converter para UTC. |
+| 2026-06-09 | Novo: sistema de fechamento de caixa — `Cash/Daily.vue`, `Cash/Weekly.vue`, `CashClosingService`, `CashClosingController`, `WeeklyClosingController`. |
+| 2026-06-09 | Novo: tabelas `cash_entries`, `daily_closings`, `provider_daily_closings`, `weekly_closings`, `settings`. |
+| 2026-06-09 | Novo: fechamento por prestador — `ProviderDailyClosing`, `closeProvider()` no service, modal de confirmação por prestador no `Daily.vue`. |
+| 2026-06-09 | Fix fechamento semanal: `WeeklyClosingController` deriva `provider_total` e `store_total` como valores **esperados** (total − taxa, taxa) em vez de usar `paid_to`, evitando colunas zeradas na tabela de dias. |

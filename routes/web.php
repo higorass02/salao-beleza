@@ -28,12 +28,16 @@ Route::middleware(['auth'])->group(function () {
         Route::patch('/daily/{date}/appointments/{appointment}', [CashClosingController::class, 'updateAppointmentPaidTo'])->name('daily.appointments.update');
         Route::patch('/daily/{date}/entries/{entry}', [CashClosingController::class, 'updateEntryPaidTo'])->name('daily.entries.update');
         Route::delete('/daily/{date}/entries/{entry}', [CashClosingController::class, 'destroyEntry'])->name('daily.entries.destroy');
+        Route::post('/daily/{date}/providers/{employee}/close', [CashClosingController::class, 'closeProvider'])->name('daily.providers.close');
         Route::post('/daily/{date}/close', [CashClosingController::class, 'closeDay'])->name('daily.close');
+        Route::post('/daily/{date}/reopen', [CashClosingController::class, 'reopen'])->name('daily.reopen');
+        Route::post('/daily/{date}/recalculate', [CashClosingController::class, 'recalculate'])->name('daily.recalculate');
     });
 
     // Fechamento semanal
     Route::get('/weekly', [WeeklyClosingController::class, 'index'])->name('weekly.index');
     Route::post('/weekly/close', [WeeklyClosingController::class, 'close'])->name('weekly.close');
+    Route::post('/weekly/recalculate', [WeeklyClosingController::class, 'recalculate'])->name('weekly.recalculate');
 
     // Configurações
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');

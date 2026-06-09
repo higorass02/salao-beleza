@@ -6,6 +6,8 @@ use App\Http\Requests\StoreCashEntryRequest;
 use App\Models\Appointment;
 use App\Models\CashEntry;
 use App\Models\DailyClosing;
+use App\Models\Employee;
+use App\Models\ProviderDailyClosing;
 use App\Models\Setting;
 use App\Services\CashClosingService;
 use Illuminate\Http\Request;
@@ -64,13 +66,27 @@ class CashClosingController extends Controller
 
         $preview = $service->computeDay($validated);
 
+        $providerClosings = ProviderDailyClosing::where('date', $validated)
+            ->get()
+            ->keyBy('employee_id')
+            ->map(fn ($c) => [
+                'closed_at'            => $c->closed_at->format('d/m/Y H:i'),
+                'total_services'       => (float) $c->total_services,
+                'house_fee'            => (float) $c->house_fee,
+                'provider_share'       => (float) $c->provider_share,
+                'received_by_provider' => (float) $c->received_by_provider,
+                'received_by_store'    => (float) $c->received_by_store,
+                'net'                  => (float) $c->net,
+            ]);
+
         return Inertia::render('Cash/Daily', [
-            'date'         => $validated,
-            'dailyClosing' => $dailyClosing,
-            'appointments' => $appointments,
-            'entries'      => $entries,
-            'preview'      => $preview,
-            'settings'     => Setting::allAsArray(),
+            'date'             => $validated,
+            'dailyClosing'     => $dailyClosing,
+            'appointments'     => $appointments,
+            'entries'          => $entries,
+            'preview'          => $preview,
+            'settings'         => Setting::allAsArray(),
+            'providerClosings' => $providerClosings,
         ]);
     }
 
@@ -88,24 +104,16 @@ class CashClosingController extends Controller
     public function updateAppointmentPaidTo(string $date, Appointment $appointment, Request $request)
     {
         $this->validateDate($date);
-        $this->abortIfClosed($date);
-
         $request->validate(['paid_to' => ['nullable', 'in:provider,store']]);
-
         $appointment->update(['paid_to' => $request->paid_to]);
-
         return back();
     }
 
     public function updateEntryPaidTo(string $date, CashEntry $entry, Request $request)
     {
         $this->validateDate($date);
-        $this->abortIfClosed($date);
-
         $request->validate(['paid_to' => ['nullable', 'in:provider,store']]);
-
         $entry->update(['paid_to' => $request->paid_to]);
-
         return back();
     }
 
@@ -116,10 +124,50 @@ class CashClosingController extends Controller
         return redirect()->route('cash.daily.show', $date)->with('success', 'Entrada removida.');
     }
 
-    public function closeDay(string $date, CashClosingService $service)
+    public function closeProvider(string $date, Employee $employee, CashClosingService $service)
     {
         $this->validateDate($date);
         $this->abortIfClosed($date);
+
+        abort_if(
+            ProviderDailyClosing::where('date', $date)->where('employee_id', $employee->id)->exists(),
+            422,
+            'O caixa deste prestador já foi fechado para este dia.'
+        );
+
+        $service->closeProvider($date, $employee->id);
+
+        return redirect()->route('cash.daily.show', $date)
+            ->with('success', "Caixa de {$employee->name} fechado com sucesso!");
+    }
+
+    public function reopen(string $date)
+    {
+        $this->validateDate($date);
+
+        DailyClosing::where('date', $date)
+            ->update(['status' => 'open', 'closed_at' => null]);
+
+        return redirect()->route('cash.daily.show', $date)
+            ->with('success', 'Caixa reaberto para revisão.');
+    }
+
+    public function recalculate(string $date, CashClosingService $service)
+    {
+        $this->validateDate($date);
+
+        $closing = DailyClosing::where('date', $date)->firstOrFail();
+
+        $totals = $service->computeDay($date);
+        $closing->update($totals);
+
+        return redirect()->route('cash.daily.show', $date)
+            ->with('success', 'Caixa recalculado com sucesso!');
+    }
+
+    public function closeDay(string $date, CashClosingService $service)
+    {
+        $this->validateDate($date);
 
         $service->closeDay($date);
 
