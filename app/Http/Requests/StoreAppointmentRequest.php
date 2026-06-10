@@ -20,9 +20,9 @@ class StoreAppointmentRequest extends FormRequest
             'service_id'       => ['required', Rule::exists('services', 'id')->where('active', true)],
             'starts_at'        => ['required', 'date'],
             'notes'            => ['nullable', 'string'],
-            'is_recurring'     => ['boolean'],
-            'recurrence_type'  => ['nullable', 'in:weekly,biweekly', 'required_if:is_recurring,true'],
-            'recurrence_until' => ['nullable', 'date', 'after:starts_at', 'required_if:is_recurring,true'],
+            'is_recurring'      => ['boolean'],
+            'recurrence_type'   => ['nullable', 'in:weekly,biweekly', 'required_if:is_recurring,true'],
+            'recurrence_months' => ['nullable', 'integer', 'min:1', 'max:3', 'required_if:is_recurring,true'],
         ];
     }
 

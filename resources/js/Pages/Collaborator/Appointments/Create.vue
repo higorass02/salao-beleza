@@ -97,30 +97,42 @@
           </label>
         </div>
 
-        <div v-if="form.is_recurring" class="grid gap-4 sm:grid-cols-2 rounded-lg border border-rose-100 bg-rose-50 p-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Recorrência <span class="text-red-500">*</span></label>
-            <select
-              v-model="form.recurrence_type"
-              class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
-            >
-              <option value="">Selecione</option>
-              <option value="weekly">Semanal (a cada 7 dias)</option>
-              <option value="biweekly">Quinzenal (a cada 15 dias)</option>
-            </select>
-            <p v-if="form.errors.recurrence_type" class="mt-1 text-xs text-red-600">{{ form.errors.recurrence_type }}</p>
+        <div v-if="form.is_recurring" class="space-y-3 rounded-lg border border-rose-100 bg-rose-50 p-4">
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Frequência <span class="text-red-500">*</span></label>
+              <select
+                v-model="form.recurrence_type"
+                class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
+              >
+                <option value="">Selecione</option>
+                <option value="weekly">Semanal (a cada 7 dias)</option>
+                <option value="biweekly">Quinzenal (a cada 15 dias)</option>
+              </select>
+              <p v-if="form.errors.recurrence_type" class="mt-1 text-xs text-red-600">{{ form.errors.recurrence_type }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Duração <span class="text-red-500">*</span></label>
+              <select
+                v-model="form.recurrence_months"
+                class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
+              >
+                <option value="">Selecione</option>
+                <option value="1">1 mês</option>
+                <option value="2">2 meses</option>
+                <option value="3">3 meses (máximo)</option>
+              </select>
+              <p v-if="form.errors.recurrence_months" class="mt-1 text-xs text-red-600">{{ form.errors.recurrence_months }}</p>
+            </div>
           </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Até (máx. 3 meses) <span class="text-red-500">*</span></label>
-            <input
-              v-maska="'##/##/####'"
-              v-model="form.recurrence_until"
-              type="text"
-              inputmode="numeric"
-              placeholder="dd/mm/aaaa"
-              class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
-            />
-            <p v-if="form.errors.recurrence_until" class="mt-1 text-xs text-red-600">{{ form.errors.recurrence_until }}</p>
+
+          <!-- Preview do último agendamento -->
+          <div v-if="recurringPreview" class="flex items-center gap-2 rounded-md border border-rose-200 bg-white px-3 py-2 text-sm">
+            <svg class="h-4 w-4 shrink-0 text-rose-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+            </svg>
+            <span class="text-gray-600">Previsão do último agendamento:</span>
+            <span class="font-semibold text-rose-700">{{ recurringPreview }}</span>
           </div>
         </div>
 
@@ -149,7 +161,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useForm, Link } from '@inertiajs/vue3';
 import { vMaska } from 'maska/vue';
 import Layout from '@/Layouts/CollaboratorLayout.vue';
@@ -166,13 +178,29 @@ const selectedClient = ref(null);
 const clientError    = ref('');
 
 const form = useForm({
-  service_id:       '',
-  starts_at_date:   '',
-  starts_at_time:   '',
-  notes:            '',
-  is_recurring:     false,
-  recurrence_type:  '',
-  recurrence_until: '',
+  service_id:         '',
+  starts_at_date:     '',
+  starts_at_time:     '',
+  notes:              '',
+  is_recurring:       false,
+  recurrence_type:    '',
+  recurrence_months:  '',
+});
+
+const recurringPreview = computed(() => {
+  if (!form.is_recurring || !form.recurrence_type || !form.recurrence_months || !form.starts_at_date) return null;
+  const iso   = brToIso(form.starts_at_date);
+  if (!iso) return null;
+  const start = new Date(iso + 'T00:00:00');
+  const until = new Date(start);
+  until.setMonth(until.getMonth() + parseInt(form.recurrence_months));
+  const interval = form.recurrence_type === 'weekly' ? 7 : 14;
+  let last = null;
+  const cur = new Date(start);
+  cur.setDate(cur.getDate() + interval);
+  while (cur <= until) { last = new Date(cur); cur.setDate(cur.getDate() + interval); }
+  if (!last) return 'Nenhum agendamento adicional no período';
+  return last.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 });
 
 watch(selectedClient, () => { clientError.value = ''; });
@@ -183,13 +211,13 @@ function submit() {
     return;
   }
   form.transform((data) => ({
-    client_id:        selectedClient.value.id,
-    service_id:       data.service_id,
-    starts_at:        `${brToIso(data.starts_at_date)} ${data.starts_at_time}:00`,
-    notes:            data.notes || null,
-    is_recurring:     data.is_recurring,
-    recurrence_type:  data.is_recurring ? data.recurrence_type : null,
-    recurrence_until: data.is_recurring ? brToIso(data.recurrence_until) : null,
+    client_id:          selectedClient.value.id,
+    service_id:         data.service_id,
+    starts_at:          `${brToIso(data.starts_at_date)} ${data.starts_at_time}:00`,
+    notes:              data.notes || null,
+    is_recurring:       data.is_recurring,
+    recurrence_type:    data.is_recurring ? data.recurrence_type   : null,
+    recurrence_months:  data.is_recurring ? data.recurrence_months : null,
   })).post('/collaborator/appointments');
 }
 </script>

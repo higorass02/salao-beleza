@@ -23,6 +23,12 @@ class CreateAppointmentAction
             throw new AppointmentConflictException('Conflito de horário detectado para este funcionário e serviço.');
         }
 
+        // Calcula a data limite a partir dos meses informados (máx. 3 meses)
+        $months       = isset($data['recurrence_months']) ? (int) $data['recurrence_months'] : null;
+        $untilDate    = ($months && ! empty($data['is_recurring']))
+            ? Carbon::parse($startsAt)->addMonths($months)->toDateString()
+            : null;
+
         $parent = $this->repository->createAppointment([
             'client_id'        => $data['client_id'],
             'employee_id'      => $data['employee_id'],
@@ -33,28 +39,22 @@ class CreateAppointmentAction
             'notes'            => $data['notes'] ?? null,
             'is_recurring'     => ! empty($data['is_recurring']),
             'recurrence_type'  => $data['recurrence_type'] ?? null,
-            'recurrence_until' => $data['recurrence_until'] ?? null,
+            'recurrence_until' => $untilDate,
             'parent_id'        => null,
         ]);
 
-        if (! empty($data['is_recurring']) && ! empty($data['recurrence_type']) && ! empty($data['recurrence_until'])) {
-            $this->generateRecurrences($parent, $data, $service->duration_minutes);
+        if (! empty($data['is_recurring']) && ! empty($data['recurrence_type']) && $untilDate) {
+            $this->generateRecurrences($parent, $data, $service->duration_minutes, $untilDate);
         }
 
         return $parent;
     }
 
-    private function generateRecurrences(Appointment $parent, array $data, int $durationMinutes): void
+    private function generateRecurrences(Appointment $parent, array $data, int $durationMinutes, string $untilDate): void
     {
         $interval = $data['recurrence_type'] === 'weekly' ? 7 : 14;
-        $until    = Carbon::parse($data['recurrence_until']);
-        $maxUntil = Carbon::parse($data['starts_at'])->addMonths(3);
-
-        if ($until->gt($maxUntil)) {
-            $until = $maxUntil;
-        }
-
-        $current = Carbon::parse($data['starts_at'])->addDays($interval);
+        $until    = Carbon::parse($untilDate);
+        $current  = Carbon::parse($data['starts_at'])->addDays($interval);
 
         while ($current->lte($until)) {
             $startsAt = $current->toDateTimeString();
@@ -71,7 +71,7 @@ class CreateAppointmentAction
                     'notes'            => $data['notes'] ?? null,
                     'is_recurring'     => true,
                     'recurrence_type'  => $data['recurrence_type'],
-                    'recurrence_until' => $data['recurrence_until'],
+                    'recurrence_until' => $untilDate,
                     'parent_id'        => $parent->id,
                 ]);
             }
