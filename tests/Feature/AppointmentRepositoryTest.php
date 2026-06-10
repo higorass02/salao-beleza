@@ -218,4 +218,55 @@ class AppointmentRepositoryTest extends TestCase
         $this->assertEquals($sooner->id, $results->first()->id);
         $this->assertEquals($later->id, $results->last()->id);
     }
+
+    // ── getForCalendar ────────────────────────────────────────────────────────
+
+    public function test_get_for_calendar_returns_all_without_employee_filter(): void
+    {
+        $other = Employee::factory()->create();
+
+        Appointment::factory()->create([
+            'employee_id' => $this->employee->id,
+            'starts_at'   => '2026-07-01 10:00:00',
+            'ends_at'     => '2026-07-01 11:00:00',
+            'status'      => 'scheduled',
+        ]);
+        Appointment::factory()->create([
+            'employee_id' => $other->id,
+            'starts_at'   => '2026-07-01 14:00:00',
+            'ends_at'     => '2026-07-01 15:00:00',
+            'status'      => 'scheduled',
+        ]);
+
+        $results = $this->repo->getForCalendar('2026-07-01 00:00:00', '2026-07-01 23:59:59');
+
+        $this->assertCount(2, $results);
+    }
+
+    public function test_get_for_calendar_filters_by_employee_id(): void
+    {
+        $other = Employee::factory()->create();
+
+        $mine = Appointment::factory()->create([
+            'employee_id' => $this->employee->id,
+            'starts_at'   => '2026-07-01 10:00:00',
+            'ends_at'     => '2026-07-01 11:00:00',
+            'status'      => 'scheduled',
+        ]);
+        Appointment::factory()->create([
+            'employee_id' => $other->id,
+            'starts_at'   => '2026-07-01 14:00:00',
+            'ends_at'     => '2026-07-01 15:00:00',
+            'status'      => 'scheduled',
+        ]);
+
+        $results = $this->repo->getForCalendar(
+            '2026-07-01 00:00:00',
+            '2026-07-01 23:59:59',
+            $this->employee->id,
+        );
+
+        $this->assertCount(1, $results);
+        $this->assertEquals($mine->id, $results->first()->id);
+    }
 }

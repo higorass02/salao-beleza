@@ -25,8 +25,8 @@ class EmployeeServiceTest extends TestCase
         $employees = $this->service->list();
 
         $this->assertCount(3, $employees);
-        $this->assertEquals('Ana', $employees->first()->name);
-        $this->assertEquals('Zé', $employees->last()->name);
+        $this->assertEquals('Ana', $employees->first()['name']);
+        $this->assertEquals('Zé', $employees->last()['name']);
     }
 
     public function test_create_persists_employee(): void

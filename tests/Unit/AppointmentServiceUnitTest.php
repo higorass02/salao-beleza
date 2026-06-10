@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Actions\Appointment\CreateAppointmentAction;
+use App\Actions\Appointment\UpdateAppointmentAction;
 use App\Models\Appointment;
 use App\Repositories\Contracts\AppointmentRepositoryInterface;
 use App\Services\AppointmentService;
@@ -25,8 +26,9 @@ class AppointmentServiceUnitTest extends TestCase
             ->with($data)
             ->willReturn($appointment);
 
-        $repo    = $this->createMock(AppointmentRepositoryInterface::class);
-        $service = new AppointmentService($repo, $action);
+        $repo         = $this->createMock(AppointmentRepositoryInterface::class);
+        $updateAction = $this->createMock(UpdateAppointmentAction::class);
+        $service      = new AppointmentService($repo, $action, $updateAction);
 
         $result = $service->create($data);
 
@@ -42,8 +44,9 @@ class AppointmentServiceUnitTest extends TestCase
             ->method('getUpcoming')
             ->willReturn($collection);
 
-        $action  = $this->createMock(CreateAppointmentAction::class);
-        $service = new AppointmentService($repo, $action);
+        $action       = $this->createMock(CreateAppointmentAction::class);
+        $updateAction = $this->createMock(UpdateAppointmentAction::class);
+        $service      = new AppointmentService($repo, $action, $updateAction);
 
         $result = $service->listUpcoming();
 
