@@ -12,8 +12,11 @@
         <div>
           <label class="block text-sm font-medium text-gray-700">Data</label>
           <input
+            v-maska="'##/##/####'"
             v-model="selectedDate"
-            type="date"
+            type="text"
+            inputmode="numeric"
+            placeholder="dd/mm/aaaa"
             class="mt-1 block rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
           />
         </div>
@@ -577,7 +580,11 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { Link, router, useForm } from '@inertiajs/vue3';
+import { vMaska } from 'maska/vue';
 import Layout from '@/Layouts/AdminLayout.vue';
+
+const isoToBr = (d) => { if (!d || d.length < 10) return ''; const [y, m, day] = d.substring(0, 10).split('-'); return `${day}/${m}/${y}`; };
+const brToIso = (d) => { if (!d || d.length !== 10) return ''; const [dd, mm, yy] = d.split('/'); return `${yy}-${mm}-${dd}`; };
 
 const props = defineProps({
   date:             { type: String, default: null },
@@ -589,8 +596,8 @@ const props = defineProps({
   providerClosings: { type: Object, default: () => ({}) },
 });
 
-const today = new Date().toISOString().split('T')[0];
-const selectedDate        = ref(props.date ?? today);
+const today = isoToBr(new Date().toISOString().split('T')[0]);
+const selectedDate        = ref(isoToBr(props.date) || today);
 const showAddModal        = ref(false);
 const showSummaryModal    = ref(false);
 const providerCloseTarget = ref(null); // { id, name, ...emp } — abre modal de confirmação
@@ -739,8 +746,9 @@ function paidToBadge(paid_to) {
 }
 
 function loadReport() {
-  if (!selectedDate.value) return;
-  router.get(`/cash/daily/${selectedDate.value}`);
+  const iso = brToIso(selectedDate.value);
+  if (!iso) return;
+  router.get(`/cash/daily/${iso}`);
 }
 
 function updatePaidTo(item, paid_to) {
