@@ -17,6 +17,7 @@ class ServiceController extends Controller
         ]);
     }
 
+
     public function create()
     {
         return Inertia::render('Services/Create');

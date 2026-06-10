@@ -15,11 +15,14 @@ class StoreAppointmentRequest extends FormRequest
     public function rules()
     {
         return [
-            'client_id'   => ['required', 'exists:clients,id'],
-            'employee_id' => ['required', Rule::exists('employees', 'id')->where('active', true)],
-            'service_id'  => ['required', Rule::exists('services', 'id')->where('active', true)],
-            'starts_at'   => ['required', 'date'],
-            'notes'       => ['nullable', 'string'],
+            'client_id'        => ['required', 'exists:clients,id'],
+            'employee_id'      => ['required', Rule::exists('employees', 'id')->where('active', true)],
+            'service_id'       => ['required', Rule::exists('services', 'id')->where('active', true)],
+            'starts_at'        => ['required', 'date'],
+            'notes'            => ['nullable', 'string'],
+            'is_recurring'     => ['boolean'],
+            'recurrence_type'  => ['nullable', 'in:weekly,biweekly', 'required_if:is_recurring,true'],
+            'recurrence_until' => ['nullable', 'date', 'after:starts_at', 'required_if:is_recurring,true'],
         ];
     }
 

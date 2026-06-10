@@ -15,6 +15,7 @@ class UpdateClientRequest extends FormRequest
     {
         return [
             'name'        => ['required', 'string', 'max:255'],
+            'apelido'     => ['nullable', 'string', 'max:100'],
             'email'       => ['nullable', 'email:rfc,dns'],
             'phone'       => ['nullable', 'string', 'regex:/^\(\d{2}\)\s\d{4,5}-\d{4}$/'],
             'notes'       => ['nullable', 'string'],

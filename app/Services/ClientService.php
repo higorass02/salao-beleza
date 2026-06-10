@@ -6,9 +6,16 @@ use App\Models\Client;
 
 class ClientService
 {
-    public function list()
+    public function list(?string $query = null, int $perPage = 20)
     {
-        return Client::orderBy('name')->get();
+        return Client::orderBy('name')
+            ->when($query, fn ($q) => $q->where(fn ($sub) =>
+                $sub->where('name', 'like', "%{$query}%")
+                    ->orWhere('apelido', 'like', "%{$query}%")
+                    ->orWhere('phone', 'like', "%{$query}%")
+            ))
+            ->paginate($perPage)
+            ->withQueryString();
     }
 
     public function create(array $data)

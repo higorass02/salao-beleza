@@ -18,9 +18,10 @@ class StoreEmployeeRequest extends FormRequest
             'email'       => ['required', 'email:rfc,dns', 'unique:employees,email'],
             'phone'       => ['nullable', 'string', 'regex:/^\(\d{2}\)\s\d{4,5}-\d{4}$/'],
             'role'        => ['required', 'string', 'max:100'],
-            'active'      => ['boolean'],
-            'birth_day'   => ['nullable', 'integer', 'min:1', 'max:31'],
-            'birth_month' => ['nullable', 'integer', 'min:1', 'max:12'],
+            'active'            => ['boolean'],
+            'charges_house_fee' => ['boolean'],
+            'birth_day'         => ['nullable', 'integer', 'min:1', 'max:31'],
+            'birth_month'       => ['nullable', 'integer', 'min:1', 'max:12'],
         ];
     }
 

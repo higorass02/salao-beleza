@@ -11,12 +11,11 @@ use Illuminate\Http\Request;
 
 class ClientController extends Controller
 {
-    public function index(ClientService $service)
+    public function index(Request $request, ClientService $service)
     {
-        $clients = $service->list();
-
         return Inertia::render('Clients/Index', [
-            'clients' => $clients,
+            'clients' => $service->list($request->q),
+            'filters' => ['q' => $request->q ?? ''],
         ]);
     }
 
@@ -63,10 +62,10 @@ class ClientController extends Controller
         return Client::query()
             ->when($request->q, fn ($query, $q) => $query->where(fn ($sub) =>
                 $sub->where('name', 'like', "%{$q}%")
-                    ->orWhere('email', 'like', "%{$q}%")
+                    ->orWhere('apelido', 'like', "%{$q}%")
                     ->orWhere('phone', 'like', "%{$q}%")
             ))
             ->limit(10)
-            ->get(['id', 'name', 'email', 'phone']);
+            ->get(['id', 'name', 'apelido', 'phone']);
     }
 }
