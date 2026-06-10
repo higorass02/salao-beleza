@@ -46,6 +46,8 @@ Route::middleware(['auth', 'collaborator', 'password.changed'])->prefix('collabo
     Route::resource('appointments', \App\Http\Controllers\Collaborator\AppointmentController::class)
         ->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
 
+    Route::get('/settings', [\App\Http\Controllers\Collaborator\SettingsController::class, 'edit'])->name('settings');
+    Route::put('/settings', [\App\Http\Controllers\Collaborator\SettingsController::class, 'update'])->name('settings.update');
 });
 
 // -------------------------------------------------------

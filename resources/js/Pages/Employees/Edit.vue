@@ -119,6 +119,21 @@
               </div>
             </label>
           </div>
+
+          <!-- Notificação diária -->
+          <div class="sm:col-span-2">
+            <label class="flex cursor-pointer items-center gap-3">
+              <div class="relative">
+                <input type="checkbox" v-model="form.notify_appointments" class="sr-only peer" />
+                <div class="h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-rose-500 transition-colors" />
+                <div class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5" />
+              </div>
+              <div>
+                <span class="text-sm font-medium text-gray-700">Receber notificação diária de agendamentos</span>
+                <p class="text-xs text-gray-500">E-mail às 09h com os clientes do dia (o colaborador também pode desativar nas próprias configurações)</p>
+              </div>
+            </label>
+          </div>
         </div>
 
         <div class="flex items-center justify-end gap-3 border-t border-gray-100 pt-5">
@@ -163,10 +178,11 @@ const form = useForm({
   email:              props.employee.email ?? '',
   phone:              props.employee.phone ?? '',
   role:               props.employee.role ?? '',
-  active:             Boolean(props.employee.active),
-  charges_house_fee:  props.employee.charges_house_fee !== false,
-  birth_day:          props.employee.birth_day ?? '',
-  birth_month:        props.employee.birth_month ?? '',
+  active:               Boolean(props.employee.active),
+  charges_house_fee:    props.employee.charges_house_fee !== false,
+  birth_day:            props.employee.birth_day ?? '',
+  birth_month:          props.employee.birth_month ?? '',
+  notify_appointments:  props.employee.notify_appointments !== false,
 });
 
 function submit() {
