@@ -33,6 +33,7 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', 'password.changed'])->group(function () {
     Route::get('clients/search', [ClientController::class, 'search'])->name('clients.search');
     Route::resource('clients', ClientController::class)->except(['show']);
+    Route::put('clients/{client}/activate', [ClientController::class, 'activate'])->name('clients.activate');
 });
 
 // -------------------------------------------------------

@@ -12,11 +12,16 @@ class Client extends Model
     protected $fillable = [
         'name',
         'apelido',
+        'active',
         'email',
         'phone',
         'notes',
         'birth_day',
         'birth_month',
+    ];
+
+    protected $casts = [
+        'active' => 'boolean',
     ];
 
     public function appointments()

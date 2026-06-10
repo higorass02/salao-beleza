@@ -50,16 +50,26 @@ class ClientController extends Controller
         return redirect()->route('clients.index');
     }
 
-    public function destroy(Client $client)
+    public function destroy(Client $client, ClientService $service)
     {
-        $client->delete();
+        $service->deactivate($client);
 
-        return redirect()->route('clients.index');
+        return redirect()->route('clients.index')
+            ->with('success', 'Cliente desativado. Agendamentos futuros cancelados e admin notificado.');
+    }
+
+    public function activate(Client $client, ClientService $service)
+    {
+        $service->activate($client);
+
+        return redirect()->route('clients.index')
+            ->with('success', 'Cliente reativado com sucesso.');
     }
 
     public function search(Request $request)
     {
         return Client::query()
+            ->where('active', true)
             ->when($request->q, fn ($query, $q) => $query->where(fn ($sub) =>
                 $sub->where('name', 'like', "%{$q}%")
                     ->orWhere('apelido', 'like', "%{$q}%")
