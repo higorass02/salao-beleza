@@ -31,6 +31,12 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
+        $user = Auth::user();
+
+        if ($user->isCollaborator()) {
+            return redirect()->intended(route('collaborator.dashboard'));
+        }
+
         return redirect()->intended(route('dashboard'));
     }
 
@@ -41,6 +47,8 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect('/')
+            ->withoutCookie('remember_web')
+            ->withoutCookie(Auth::guard('web')->getRecallerName());
     }
 }

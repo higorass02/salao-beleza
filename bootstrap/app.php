@@ -15,6 +15,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
+
+        $middleware->alias([
+            'admin'            => \App\Http\Middleware\EnsureIsAdmin::class,
+            'collaborator'     => \App\Http\Middleware\EnsureIsCollaborator::class,
+            'password.changed' => \App\Http\Middleware\EnsurePasswordChanged::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->renderable(function (AppointmentConflictException $e, $request) {

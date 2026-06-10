@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AppointmentController;
+use App\Http\Controllers\Auth\ChangePasswordController;
 use App\Http\Controllers\CashClosingController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\EmployeeController;
@@ -16,13 +17,44 @@ Route::get('/', function () {
     return inertia('Landing');
 })->name('landing');
 
+// -------------------------------------------------------
+// -------------------------------------------------------
+// Rotas compartilhadas — qualquer usuário autenticado
+// (não exigem must_change_password = false)
+// -------------------------------------------------------
 Route::middleware(['auth'])->group(function () {
+    Route::get('/change-password', [ChangePasswordController::class, 'edit'])->name('password.change');
+    Route::put('/change-password', [ChangePasswordController::class, 'update'])->name('password.update');
+});
+
+// -------------------------------------------------------
+// Clientes — acessível por admin e colaborador
+// -------------------------------------------------------
+Route::middleware(['auth', 'password.changed'])->group(function () {
+    Route::get('clients/search', [ClientController::class, 'search'])->name('clients.search');
+    Route::resource('clients', ClientController::class)->except(['show']);
+});
+
+// -------------------------------------------------------
+// Rotas de Colaborador (prestador de serviço logado)
+// -------------------------------------------------------
+Route::middleware(['auth', 'collaborator', 'password.changed'])->prefix('collaborator')->name('collaborator.')->group(function () {
+    Route::get('/', \App\Http\Controllers\Collaborator\DashboardController::class)->name('dashboard');
+    Route::get('/calendar', [\App\Http\Controllers\Collaborator\CalendarController::class, 'index'])->name('calendar');
+
+    Route::resource('appointments', \App\Http\Controllers\Collaborator\AppointmentController::class)
+        ->only(['index', 'create', 'store', 'edit', 'update', 'destroy']);
+
+});
+
+// -------------------------------------------------------
+// Rotas Admin
+// -------------------------------------------------------
+Route::middleware(['auth', 'admin', 'password.changed'])->group(function () {
     Route::get('/dashboard', [AppointmentController::class, 'dashboard'])->name('dashboard');
 
     Route::resource('employees', EmployeeController::class)->except(['show']);
     Route::resource('services', ServiceController::class)->except(['show']);
-    Route::get('clients/search', [ClientController::class, 'search'])->name('clients.search');
-    Route::resource('clients', ClientController::class)->except(['show']);
     Route::resource('appointments', AppointmentController::class)->only(['index', 'store', 'edit', 'update', 'destroy']);
 
     // Fechamento de caixa diário

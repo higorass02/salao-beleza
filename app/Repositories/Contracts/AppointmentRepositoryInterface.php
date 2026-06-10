@@ -9,7 +9,7 @@ interface AppointmentRepositoryInterface
 {
     public function getUpcoming();
 
-    public function getForCalendar(string $from, string $to);
+    public function getForCalendar(string $from, string $to, ?int $employeeId = null);
 
     public function hasConflict(int $employeeId, int $serviceId, string $startsAt, string $endsAt, ?int $excludeId = null): bool;
 

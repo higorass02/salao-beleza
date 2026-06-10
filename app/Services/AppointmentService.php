@@ -31,8 +31,8 @@ class AppointmentService
         return $this->repository->getUpcoming();
     }
 
-    public function listForCalendar(string $from, string $to)
+    public function listForCalendar(string $from, string $to, ?int $employeeId = null)
     {
-        return $this->repository->getForCalendar($from, $to);
+        return $this->repository->getForCalendar($from, $to, $employeeId);
     }
 }
