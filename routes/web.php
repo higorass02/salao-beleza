@@ -11,8 +11,13 @@ use Illuminate\Support\Facades\Route;
 
 require __DIR__.'/auth.php';
 
+// Página pública (landing page)
+Route::get('/', function () {
+    return inertia('Landing');
+})->name('landing');
+
 Route::middleware(['auth'])->group(function () {
-    Route::get('/', [AppointmentController::class, 'dashboard'])->name('dashboard');
+    Route::get('/dashboard', [AppointmentController::class, 'dashboard'])->name('dashboard');
 
     Route::resource('employees', EmployeeController::class)->except(['show']);
     Route::resource('services', ServiceController::class)->except(['show']);

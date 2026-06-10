@@ -1,0 +1,57 @@
+FROM php:8.3-fpm-alpine
+
+# Dependências do sistema + Nginx + Supervisor
+RUN apk add --no-cache \
+    nginx \
+    supervisor \
+    git \
+    curl \
+    unzip \
+    nodejs \
+    npm \
+    libpng-dev \
+    libxml2-dev \
+    libzip-dev \
+    oniguruma-dev \
+    icu-dev \
+    sqlite-dev \
+    && docker-php-ext-install pdo_mysql mbstring zip exif pcntl bcmath intl
+
+# Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Yarn
+RUN npm install -g yarn
+
+WORKDIR /var/www/html
+
+# Dependências PHP (cache de layer)
+COPY composer.json composer.lock ./
+RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
+
+# Dependências JS (cache de layer)
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile
+
+# Código da aplicação
+COPY . .
+
+# Finaliza composer e builda o frontend
+RUN composer dump-autoload --optimize && yarn build
+
+# Permissões
+RUN chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
+
+# Config Nginx para Railway (porta 8080)
+RUN mkdir -p /run/nginx
+COPY docker/nginx/default.conf /etc/nginx/http.d/default.conf
+RUN sed -i 's/listen 80/listen 8080/' /etc/nginx/http.d/default.conf \
+    && sed -i 's/fastcgi_pass app:9000/fastcgi_pass 127.0.0.1:9000/' /etc/nginx/http.d/default.conf
+
+# Supervisor: roda php-fpm + nginx juntos
+COPY docker/supervisor.railway.conf /etc/supervisor/conf.d/supervisord.conf
+
+EXPOSE 8080
+
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
