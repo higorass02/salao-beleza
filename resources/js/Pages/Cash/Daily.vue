@@ -11,14 +11,7 @@
       <div class="flex items-end gap-3">
         <div>
           <label class="block text-sm font-medium text-gray-700">Data</label>
-          <input
-            v-maska="'##/##/####'"
-            v-model="selectedDate"
-            type="text"
-            inputmode="numeric"
-            placeholder="dd/mm/aaaa"
-            class="mt-1 block rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
-          />
+          <DatePicker v-model="selectedDate" class="mt-1" />
         </div>
         <button
           type="button"
@@ -582,6 +575,7 @@ import { ref, computed } from 'vue';
 import { Link, router, useForm } from '@inertiajs/vue3';
 import { vMaska } from 'maska/vue';
 import Layout from '@/Layouts/AdminLayout.vue';
+import DatePicker from '@/Components/DatePicker.vue';
 
 const isoToBr = (d) => { if (!d || d.length < 10) return ''; const [y, m, day] = d.substring(0, 10).split('-'); return `${day}/${m}/${y}`; };
 const brToIso = (d) => { if (!d || d.length !== 10) return ''; const [dd, mm, yy] = d.split('/'); return `${yy}-${mm}-${dd}`; };
