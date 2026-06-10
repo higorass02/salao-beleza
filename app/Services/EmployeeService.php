@@ -29,7 +29,15 @@ class EmployeeService
 
     public function update(Employee $employee, array $data): Employee
     {
+        $wasActive = (bool) $employee->active;
         $employee->update($data);
+
+        // Se o funcionário foi desativado, invalida o token de sessão do usuário vinculado
+        // para que ele seja desconectado no próximo request (mesmo que ainda esteja logado)
+        if ($wasActive && isset($data['active']) && ! $data['active']) {
+            $employee->user?->update(['remember_token' => null]);
+        }
+
         return $employee;
     }
 

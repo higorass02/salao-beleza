@@ -33,6 +33,17 @@ class AuthenticatedSessionController extends Controller
 
         $user = Auth::user();
 
+        // Bloqueia login se o funcionário vinculado estiver inativo
+        if ($user->isCollaborator() && $user->employee?->active === false) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return back()->withErrors([
+                'email' => 'Seu acesso foi desativado pelo administrador.',
+            ])->onlyInput('email');
+        }
+
         if ($user->isCollaborator()) {
             return redirect()->intended(route('collaborator.dashboard'));
         }
