@@ -69,6 +69,7 @@ Route::middleware(['auth', 'admin', 'password.changed'])->group(function () {
         Route::patch('/daily/{date}/entries/{entry}', [CashClosingController::class, 'updateEntryPaidTo'])->name('daily.entries.update');
         Route::delete('/daily/{date}/entries/{entry}', [CashClosingController::class, 'destroyEntry'])->name('daily.entries.destroy');
         Route::post('/daily/{date}/providers/{employee}/close', [CashClosingController::class, 'closeProvider'])->name('daily.providers.close');
+        Route::post('/daily/{date}/providers/{employee}/reopen', [CashClosingController::class, 'reopenProvider'])->name('daily.providers.reopen');
         Route::post('/daily/{date}/close', [CashClosingController::class, 'closeDay'])->name('daily.close');
         Route::post('/daily/{date}/reopen', [CashClosingController::class, 'reopen'])->name('daily.reopen');
         Route::post('/daily/{date}/recalculate', [CashClosingController::class, 'recalculate'])->name('daily.recalculate');

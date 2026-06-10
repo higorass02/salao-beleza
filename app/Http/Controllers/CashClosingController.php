@@ -141,6 +141,18 @@ class CashClosingController extends Controller
             ->with('success', "Caixa de {$employee->name} fechado com sucesso!");
     }
 
+    public function reopenProvider(string $date, Employee $employee)
+    {
+        $this->validateDate($date);
+
+        ProviderDailyClosing::where('date', $date)
+            ->where('employee_id', $employee->id)
+            ->delete();
+
+        return redirect()->route('cash.daily.show', $date)
+            ->with('success', "Caixa de {$employee->name} reaberto para revisão.");
+    }
+
     public function reopen(string $date)
     {
         $this->validateDate($date);

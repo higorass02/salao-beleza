@@ -188,11 +188,22 @@
               </div>
               <div class="flex items-center gap-3">
                 <span class="text-sm font-medium text-gray-700">{{ fmt(emp.totalServices) }}</span>
-                <!-- Badge de fechado -->
-                <span v-if="emp.closing" class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
-                  <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
-                  Fechado {{ emp.closing.closed_at }}
-                </span>
+                <!-- Badge de fechado + botão reabrir -->
+                <template v-if="emp.closing">
+                  <span class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
+                    <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" /></svg>
+                    Fechado {{ emp.closing.closed_at }}
+                  </span>
+                  <button
+                    v-if="!isClosed"
+                    type="button"
+                    class="inline-flex items-center gap-1 rounded-lg border border-amber-300 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 hover:bg-amber-100 transition-colors"
+                    @click="reopenProvider(emp)"
+                  >
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" /></svg>
+                    Reabrir
+                  </button>
+                </template>
                 <!-- Botão fechar -->
                 <button
                   v-else-if="!isClosed && emp.id !== 'manual'"
@@ -781,6 +792,11 @@ function confirmCloseProvider() {
     {},
     { preserveScroll: true, onSuccess: () => { providerCloseTarget.value = null; } }
   );
+}
+
+function reopenProvider(emp) {
+  if (!confirm(`Reabrir o caixa de ${emp.name}? O fechamento individual será removido e os campos "Para quem foi pago" ficarão editáveis novamente.`)) return;
+  router.post(`/cash/daily/${props.date}/providers/${emp.id}/reopen`, {}, { preserveScroll: true });
 }
 
 // Entry form
