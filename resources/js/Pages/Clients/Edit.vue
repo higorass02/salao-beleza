@@ -1,5 +1,5 @@
 <template>
-  <Layout>
+  <component :is="layout">
     <div class="mx-auto max-w-2xl space-y-6">
       <div class="flex items-center gap-3">
         <Link href="/clients" class="flex h-8 w-8 items-center justify-center rounded-lg border border-gray-200 bg-white text-gray-500 hover:text-gray-700 transition-colors">
@@ -108,13 +108,20 @@
         </div>
       </form>
     </div>
-  </Layout>
+  </component>
 </template>
 
 <script setup>
-import { Link, useForm } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import { Link, useForm, usePage } from '@inertiajs/vue3';
 import { vMaska } from 'maska/vue';
-import Layout from '@/Layouts/AdminLayout.vue';
+import AdminLayout from '@/Layouts/AdminLayout.vue';
+import CollaboratorLayout from '@/Layouts/CollaboratorLayout.vue';
+
+const page = usePage();
+const layout = computed(() =>
+  page.props.auth?.user?.is_collaborator ? CollaboratorLayout : AdminLayout
+);
 
 const props = defineProps({
   client: { type: Object, required: true },

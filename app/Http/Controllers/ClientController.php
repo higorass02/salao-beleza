@@ -29,6 +29,11 @@ class ClientController extends Controller
     {
         $service->create($request->validated());
 
+        if ($request->user()->isCollaborator()) {
+            return redirect()->route('collaborator.appointments.create')
+                ->with('success', 'Cliente cadastrado com sucesso.');
+        }
+
         return redirect()->route('clients.index');
     }
 

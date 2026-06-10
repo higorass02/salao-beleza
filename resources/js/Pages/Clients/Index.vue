@@ -1,5 +1,5 @@
 <template>
-  <Layout>
+  <component :is="layout">
     <div class="space-y-6">
       <div class="flex items-center justify-between">
         <div>
@@ -75,14 +75,21 @@
         </table>
       </div>
     </div>
-  </Layout>
+  </component>
 </template>
 
 <script setup>
-import { Link, router } from '@inertiajs/vue3';
-import Layout from '@/Layouts/AdminLayout.vue';
+import { computed } from 'vue';
+import { Link, router, usePage } from '@inertiajs/vue3';
+import AdminLayout from '@/Layouts/AdminLayout.vue';
+import CollaboratorLayout from '@/Layouts/CollaboratorLayout.vue';
 
-const props = defineProps({
+const page = usePage();
+const layout = computed(() =>
+  page.props.auth?.user?.is_collaborator ? CollaboratorLayout : AdminLayout
+);
+
+defineProps({
   clients: { type: Array, default: () => [] },
 });
 
