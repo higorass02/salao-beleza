@@ -27,4 +27,14 @@ class Employee extends Model
     {
         return $this->hasMany(Appointment::class);
     }
+
+    public function user()
+    {
+        return $this->hasOne(User::class);
+    }
+
+    public function hasUser(): bool
+    {
+        return $this->user()->exists();
+    }
 }

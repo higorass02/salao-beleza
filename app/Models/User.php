@@ -15,6 +15,8 @@ class User extends Authenticatable
         'name',
         'email',
         'is_admin',
+        'employee_id',
+        'must_change_password',
         'password',
     ];
 
@@ -26,10 +28,21 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at' => 'datetime',
-            'password'          => 'hashed',
-            'is_admin'          => 'boolean',
+            'email_verified_at'    => 'datetime',
+            'password'             => 'hashed',
+            'is_admin'             => 'boolean',
+            'must_change_password' => 'boolean',
         ];
+    }
+
+    public function isCollaborator(): bool
+    {
+        return $this->employee_id !== null;
+    }
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class);
     }
 
     public function sendPasswordResetNotification($token): void
