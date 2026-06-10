@@ -13,9 +13,11 @@
 .env.*.local
 
 # ============================================================
-# Assets compilados (gerados pelo Vite no deploy)
+# Assets compilados
+# ATENÇÃO: public/build/ está INCLUÍDO no git propositalmente.
+# O Hostinger (shared hosting) não tem Node.js, então o build
+# precisa ser gerado localmente e commitado antes do deploy.
 # ============================================================
-# /public/build/  ← incluído no git para deploy em shared hosting
 /public/hot
 /public/storage
 
