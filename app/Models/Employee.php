@@ -16,13 +16,15 @@ class Employee extends Model
         'role',
         'active',
         'charges_house_fee',
+        'notify_appointments',
         'birth_day',
         'birth_month',
     ];
 
     protected $casts = [
-        'active'            => 'boolean',
-        'charges_house_fee' => 'boolean',
+        'active'               => 'boolean',
+        'charges_house_fee'    => 'boolean',
+        'notify_appointments'  => 'boolean',
     ];
 
     public function appointments()

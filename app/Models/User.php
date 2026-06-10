@@ -17,6 +17,7 @@ class User extends Authenticatable
         'is_admin',
         'employee_id',
         'must_change_password',
+        'notifications_enabled',
         'password',
     ];
 
@@ -28,10 +29,11 @@ class User extends Authenticatable
     protected function casts(): array
     {
         return [
-            'email_verified_at'    => 'datetime',
-            'password'             => 'hashed',
-            'is_admin'             => 'boolean',
-            'must_change_password' => 'boolean',
+            'email_verified_at'     => 'datetime',
+            'password'              => 'hashed',
+            'is_admin'              => 'boolean',
+            'must_change_password'  => 'boolean',
+            'notifications_enabled' => 'boolean',
         ];
     }
 
