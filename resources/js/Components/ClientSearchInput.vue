@@ -4,7 +4,7 @@
       v-model="query"
       type="text"
       class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
-      placeholder="Buscar por nome, e-mail ou telefone..."
+      placeholder="Buscar por nome, apelido ou telefone..."
     />
     <ul
       v-if="results.length"
@@ -17,7 +17,8 @@
         @mousedown.prevent="select(client)"
       >
         <span class="font-medium text-gray-900">{{ client.name }}</span>
-        <span class="ml-2 text-gray-500">{{ client.email || client.phone }}</span>
+        <span v-if="client.apelido" class="ml-2 text-gray-500">{{ client.apelido }}</span>
+        <span v-else-if="client.phone" class="ml-2 text-gray-500">{{ client.phone }}</span>
       </li>
     </ul>
   </div>

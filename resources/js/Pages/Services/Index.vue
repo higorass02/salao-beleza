@@ -4,7 +4,7 @@
       <div class="flex items-center justify-between">
         <div>
           <h1 class="text-2xl font-bold text-gray-900">Serviços</h1>
-          <p class="mt-1 text-sm text-gray-500">{{ services.length }} serviço(s) cadastrado(s)</p>
+          <p class="mt-1 text-sm text-gray-500">{{ services.total }} serviço(s) cadastrado(s)</p>
         </div>
         <Link
           href="/services/create"
@@ -17,8 +17,8 @@
         </Link>
       </div>
 
-      <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
-        <div v-if="services.length === 0" class="px-6 py-16 text-center">
+      <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm overflow-x-auto">
+        <div v-if="services.data.length === 0" class="px-6 py-16 text-center">
           <svg class="mx-auto h-10 w-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z" />
           </svg>
@@ -31,13 +31,13 @@
             <tr class="border-b border-gray-200 bg-gray-50">
               <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Serviço</th>
               <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Preço</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Duração</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Status</th>
+              <th class="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Duração</th>
+              <th class="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Status</th>
               <th class="px-6 py-3"></th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
-            <tr v-for="service in services" :key="service.id" class="hover:bg-gray-50">
+            <tr v-for="service in services.data" :key="service.id" class="hover:bg-gray-50">
               <td class="px-6 py-4">
                 <div>
                   <p class="text-sm font-medium text-gray-900">{{ service.name }}</p>
@@ -47,8 +47,8 @@
               <td class="px-6 py-4 text-sm font-medium text-gray-900">
                 R$ {{ Number(service.price).toFixed(2) }}
               </td>
-              <td class="px-6 py-4 text-sm text-gray-600">{{ service.duration_minutes }} min</td>
-              <td class="px-6 py-4">
+              <td class="hidden sm:table-cell px-6 py-4 text-sm text-gray-600">{{ service.duration_minutes }} min</td>
+              <td class="hidden sm:table-cell px-6 py-4">
                 <span
                   :class="service.active
                     ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20'
@@ -84,6 +84,13 @@
             </tr>
           </tbody>
         </table>
+
+        <Pagination
+          :links="services.links"
+          :from="services.from"
+          :to="services.to"
+          :total="services.total"
+        />
       </div>
     </div>
   </Layout>
@@ -92,9 +99,10 @@
 <script setup>
 import { Link, router } from '@inertiajs/vue3';
 import Layout from '@/Layouts/AdminLayout.vue';
+import Pagination from '@/Components/Pagination.vue';
 
-const props = defineProps({
-  services: { type: Array, default: () => [] },
+defineProps({
+  services: { type: Object, required: true },
 });
 
 function destroy(id) {

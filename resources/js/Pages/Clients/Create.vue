@@ -33,6 +33,20 @@
             <p v-if="form.errors.name" class="mt-1 text-xs text-red-600">{{ form.errors.name }}</p>
           </div>
 
+          <!-- Apelido -->
+          <div class="sm:col-span-2">
+            <label class="block text-sm font-medium text-gray-700">Apelido <span class="text-gray-400 font-normal">(opcional)</span></label>
+            <input
+              v-model="form.apelido"
+              type="text"
+              class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
+              :class="{ 'border-red-300': form.errors.apelido }"
+              placeholder="Como o cliente prefere ser chamado"
+            />
+            <p class="mt-1 text-xs text-gray-500">Se preenchido, aparece no autocomplete em vez do telefone</p>
+            <p v-if="form.errors.apelido" class="mt-1 text-xs text-red-600">{{ form.errors.apelido }}</p>
+          </div>
+
           <!-- Email -->
           <div>
             <label class="block text-sm font-medium text-gray-700">E-mail</label>
@@ -142,6 +156,7 @@ const months = [
 
 const form = useForm({
   name:        '',
+  apelido:     '',
   email:       '',
   phone:       '',
   notes:       '',

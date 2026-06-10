@@ -104,6 +104,21 @@
               <span class="text-sm font-medium text-gray-700">Funcionário ativo</span>
             </label>
           </div>
+
+          <!-- Taxa de serviço -->
+          <div class="sm:col-span-2">
+            <label class="flex cursor-pointer items-center gap-3">
+              <div class="relative">
+                <input type="checkbox" v-model="form.charges_house_fee" class="sr-only peer" />
+                <div class="h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-rose-500 transition-colors" />
+                <div class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5" />
+              </div>
+              <div>
+                <span class="text-sm font-medium text-gray-700">Cobra taxa de serviço (casa)</span>
+                <p class="text-xs text-gray-500">Quando ativo, a taxa da casa é descontada nos fechamentos</p>
+              </div>
+            </label>
+          </div>
         </div>
 
         <div class="flex items-center justify-end gap-3 border-t border-gray-100 pt-5">
@@ -144,13 +159,14 @@ const months = [
 ];
 
 const form = useForm({
-  name:        props.employee.name,
-  email:       props.employee.email ?? '',
-  phone:       props.employee.phone ?? '',
-  role:        props.employee.role ?? '',
-  active:      Boolean(props.employee.active),
-  birth_day:   props.employee.birth_day ?? '',
-  birth_month: props.employee.birth_month ?? '',
+  name:               props.employee.name,
+  email:              props.employee.email ?? '',
+  phone:              props.employee.phone ?? '',
+  role:               props.employee.role ?? '',
+  active:             Boolean(props.employee.active),
+  charges_house_fee:  props.employee.charges_house_fee !== false,
+  birth_day:          props.employee.birth_day ?? '',
+  birth_month:        props.employee.birth_month ?? '',
 });
 
 function submit() {

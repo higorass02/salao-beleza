@@ -25,8 +25,11 @@
           <div>
             <label class="block text-sm font-medium text-gray-700">Data <span class="text-red-500">*</span></label>
             <input
+              v-maska="'##/##/####'"
               v-model="form.starts_at_date"
-              type="date"
+              type="text"
+              inputmode="numeric"
+              placeholder="dd/mm/aaaa"
               class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
               :class="{ 'border-red-300': form.errors.starts_at }"
               required
@@ -147,8 +150,12 @@
 <script setup>
 import { ref, watch } from 'vue';
 import { useForm, Link } from '@inertiajs/vue3';
+import { vMaska } from 'maska/vue';
 import Layout from '@/Layouts/AdminLayout.vue';
 import ClientSearchInput from '@/Components/ClientSearchInput.vue';
+
+const brToIso = (d) => { if (!d || d.length !== 10) return ''; const [dd, mm, yy] = d.split('/'); return `${yy}-${mm}-${dd}`; };
+const isoToBr = (d) => { if (!d || d.length < 10) return ''; const [y, m, day] = d.substring(0, 10).split('-'); return `${day}/${m}/${y}`; };
 
 const props = defineProps({
   appointment: { type: Object, required: true },
@@ -163,7 +170,7 @@ const form = useForm({
   client_id:      props.appointment.client_id,
   employee_id:    props.appointment.employee_id,
   service_id:     props.appointment.service_id,
-  starts_at_date: props.appointment.starts_at?.substring(0, 10) ?? '',
+  starts_at_date: isoToBr(props.appointment.starts_at?.substring(0, 10) ?? ''),
   starts_at_time: props.appointment.starts_at?.substring(11, 16) ?? '',
   status:         props.appointment.status,
   notes:          props.appointment.notes ?? '',
@@ -183,7 +190,7 @@ function submit() {
     client_id:   selectedClient.value.id,
     employee_id: data.employee_id,
     service_id:  data.service_id,
-    starts_at:   `${data.starts_at_date} ${data.starts_at_time}:00`,
+    starts_at:   `${brToIso(data.starts_at_date)} ${data.starts_at_time}:00`,
     status:      data.status,
     notes:       data.notes || null,
   })).put(`/appointments/${props.appointment.id}`, {

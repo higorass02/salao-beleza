@@ -74,26 +74,26 @@
             <thead>
               <tr class="bg-gray-50 text-left">
                 <th class="px-6 py-3 text-xs font-medium uppercase tracking-wide text-gray-500">Dia</th>
-                <th class="px-6 py-3 text-xs font-medium uppercase tracking-wide text-gray-500">Status</th>
+                <th class="hidden sm:table-cell px-6 py-3 text-xs font-medium uppercase tracking-wide text-gray-500">Status</th>
                 <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500">Total</th>
-                <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500">Prestadores</th>
-                <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500">Casa</th>
-                <th class="px-6 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500">Taxas</th>
+                <th class="hidden sm:table-cell px-6 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500">Prestadores</th>
+                <th class="hidden sm:table-cell px-6 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500">Casa</th>
+                <th class="hidden sm:table-cell px-6 py-3 text-right text-xs font-medium uppercase tracking-wide text-gray-500">Taxas</th>
                 <th class="px-6 py-3"></th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
               <tr v-for="day in days" :key="day.date" class="hover:bg-gray-50">
                 <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ day.label }}</td>
-                <td class="px-6 py-4">
+                <td class="hidden sm:table-cell px-6 py-4">
                   <span :class="statusBadge(day.status).class" class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset">
                     {{ statusBadge(day.status).label }}
                   </span>
                 </td>
                 <td class="px-6 py-4 text-right text-sm font-medium text-gray-900">{{ fmt(day.total_value) }}</td>
-                <td class="px-6 py-4 text-right text-sm text-emerald-600">{{ fmt(day.provider_total) }}</td>
-                <td class="px-6 py-4 text-right text-sm text-blue-600">{{ fmt(day.store_total) }}</td>
-                <td class="px-6 py-4 text-right text-sm text-violet-600">{{ fmt(day.house_fee_total) }}</td>
+                <td class="hidden sm:table-cell px-6 py-4 text-right text-sm text-emerald-600">{{ fmt(day.provider_total) }}</td>
+                <td class="hidden sm:table-cell px-6 py-4 text-right text-sm text-blue-600">{{ fmt(day.store_total) }}</td>
+                <td class="hidden sm:table-cell px-6 py-4 text-right text-sm text-violet-600">{{ fmt(day.house_fee_total) }}</td>
                 <td class="px-6 py-4 text-right">
                   <Link
                     :href="`/cash/daily/${day.date}`"
@@ -106,11 +106,11 @@
             <tfoot>
               <tr class="border-t-2 border-gray-200 bg-gray-50 font-semibold">
                 <td class="px-6 py-4 text-sm text-gray-900">Total</td>
-                <td class="px-6 py-4" />
+                <td class="hidden sm:table-cell px-6 py-4" />
                 <td class="px-6 py-4 text-right text-sm text-gray-900">{{ fmt(weekTotals.total) }}</td>
-                <td class="px-6 py-4 text-right text-sm text-emerald-600">{{ fmt(weekTotals.provider) }}</td>
-                <td class="px-6 py-4 text-right text-sm text-blue-600">{{ fmt(weekTotals.store) }}</td>
-                <td class="px-6 py-4 text-right text-sm text-violet-600">{{ fmt(weekTotals.houseFee) }}</td>
+                <td class="hidden sm:table-cell px-6 py-4 text-right text-sm text-emerald-600">{{ fmt(weekTotals.provider) }}</td>
+                <td class="hidden sm:table-cell px-6 py-4 text-right text-sm text-blue-600">{{ fmt(weekTotals.store) }}</td>
+                <td class="hidden sm:table-cell px-6 py-4 text-right text-sm text-violet-600">{{ fmt(weekTotals.houseFee) }}</td>
                 <td class="px-6 py-4" />
               </tr>
             </tfoot>

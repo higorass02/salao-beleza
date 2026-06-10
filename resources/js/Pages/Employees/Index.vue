@@ -17,7 +17,7 @@
         </Link>
       </div>
 
-      <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div class="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm overflow-x-auto">
         <div v-if="employees.length === 0" class="px-6 py-16 text-center">
           <svg class="mx-auto h-10 w-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
@@ -30,9 +30,9 @@
           <thead>
             <tr class="border-b border-gray-200 bg-gray-50">
               <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Nome</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Email</th>
+              <th class="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Email</th>
               <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Função</th>
-              <th class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Status</th>
+              <th class="hidden sm:table-cell px-6 py-3 text-left text-xs font-medium uppercase tracking-wide text-gray-500">Status</th>
               <th class="px-6 py-3"></th>
             </tr>
           </thead>
@@ -46,9 +46,9 @@
                   <span class="text-sm font-medium text-gray-900">{{ employee.name }}</span>
                 </div>
               </td>
-              <td class="px-6 py-4 text-sm text-gray-600">{{ employee.email || '—' }}</td>
+              <td class="hidden sm:table-cell px-6 py-4 text-sm text-gray-600">{{ employee.email || '—' }}</td>
               <td class="px-6 py-4 text-sm text-gray-600">{{ employee.role || '—' }}</td>
-              <td class="px-6 py-4">
+              <td class="hidden sm:table-cell px-6 py-4">
                 <span
                   :class="employee.active
                     ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20'

@@ -24,8 +24,8 @@
           <div>
             <label class="block text-sm font-medium text-gray-700">Data</label>
             <input
-              type="date"
-              :value="form.starts_at_date"
+              type="text"
+              :value="isoToBr(form.starts_at_date)"
               class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500 bg-gray-50"
               readonly
             />
@@ -79,6 +79,45 @@
           <p v-if="clientError" class="mt-1 text-xs text-red-600">{{ clientError }}</p>
         </div>
 
+        <!-- Recorrência -->
+        <div>
+          <label class="flex cursor-pointer items-center gap-3">
+            <div class="relative">
+              <input type="checkbox" v-model="form.is_recurring" class="sr-only peer" />
+              <div class="h-6 w-11 rounded-full bg-gray-200 peer-checked:bg-rose-500 transition-colors" />
+              <div class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform peer-checked:translate-x-5" />
+            </div>
+            <span class="text-sm font-medium text-gray-700">Criar agendamentos recorrentes</span>
+          </label>
+        </div>
+
+        <div v-if="form.is_recurring" class="grid gap-4 sm:grid-cols-2 rounded-lg border border-rose-100 bg-rose-50 p-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Recorrência <span class="text-red-500">*</span></label>
+            <select
+              v-model="form.recurrence_type"
+              class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
+            >
+              <option value="">Selecione</option>
+              <option value="weekly">Semanal (a cada 7 dias)</option>
+              <option value="biweekly">Quinzenal (a cada 15 dias)</option>
+            </select>
+            <p v-if="form.errors.recurrence_type" class="mt-1 text-xs text-red-600">{{ form.errors.recurrence_type }}</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Até (máx. 3 meses) <span class="text-red-500">*</span></label>
+            <input
+              v-maska="'##/##/####'"
+              v-model="form.recurrence_until"
+              type="text"
+              inputmode="numeric"
+              placeholder="dd/mm/aaaa"
+              class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
+            />
+            <p v-if="form.errors.recurrence_until" class="mt-1 text-xs text-red-600">{{ form.errors.recurrence_until }}</p>
+          </div>
+        </div>
+
         <div v-if="form.errors.starts_at" class="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
           {{ form.errors.starts_at }}
         </div>
@@ -111,7 +150,11 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
 import { useForm } from '@inertiajs/vue3';
+import { vMaska } from 'maska/vue';
 import ClientSearchInput from '@/Components/ClientSearchInput.vue';
+
+const isoToBr = (d) => { if (!d || d.length < 10) return ''; const [y, m, day] = d.substring(0, 10).split('-'); return `${day}/${m}/${y}`; };
+const brToIso = (d) => { if (!d || d.length !== 10) return ''; const [dd, mm, yy] = d.split('/'); return `${yy}-${mm}-${dd}`; };
 
 const props = defineProps({
   date: String,
@@ -126,11 +169,14 @@ const selectedClient = ref(null);
 const clientError = ref('');
 
 const form = useForm({
-  client_id: null,
-  employee_id: '',
-  service_id: '',
-  starts_at_date: props.date,
-  starts_at_time: props.time,
+  client_id:        null,
+  employee_id:      '',
+  service_id:       '',
+  starts_at_date:   props.date,
+  starts_at_time:   props.time,
+  is_recurring:     false,
+  recurrence_type:  '',
+  recurrence_until: '',
 });
 
 const formattedDate = computed(() => {
@@ -154,10 +200,13 @@ function submit() {
     return;
   }
   form.transform((data) => ({
-    client_id: selectedClient.value.id,
-    employee_id: data.employee_id,
-    service_id: data.service_id,
-    starts_at: `${data.starts_at_date} ${data.starts_at_time}:00`,
+    client_id:        selectedClient.value.id,
+    employee_id:      data.employee_id,
+    service_id:       data.service_id,
+    starts_at:        `${data.starts_at_date} ${data.starts_at_time}:00`,
+    is_recurring:     data.is_recurring,
+    recurrence_type:  data.is_recurring ? data.recurrence_type : null,
+    recurrence_until: data.is_recurring ? brToIso(data.recurrence_until) : null,
   })).post('/appointments', {
     onSuccess: () => emit('close'),
   });

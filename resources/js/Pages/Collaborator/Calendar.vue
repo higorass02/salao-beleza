@@ -113,8 +113,8 @@
             <div>
               <label class="block text-sm font-medium text-gray-700">Data</label>
               <input
-                type="date"
-                :value="createForm.starts_at_date"
+                type="text"
+                :value="isoToBr(createForm.starts_at_date)"
                 class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm bg-gray-50 focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
                 readonly
               />
@@ -180,6 +180,8 @@ import { ref, computed, reactive, watch, onMounted } from 'vue';
 import { Link, router } from '@inertiajs/vue3';
 import Layout from '@/Layouts/CollaboratorLayout.vue';
 import ClientSearchInput from '@/Components/ClientSearchInput.vue';
+
+const isoToBr = (d) => { if (!d || d.length < 10) return ''; const [y, m, day] = d.substring(0, 10).split('-'); return `${day}/${m}/${y}`; };
 
 const props = defineProps({
   appointments:       { type: Array,  default: () => [] },
