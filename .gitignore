@@ -15,7 +15,7 @@
 # ============================================================
 # Assets compilados
 # ATENÇÃO: public/build/ está INCLUÍDO no git propositalmente.
-# O Hostinger (shared hosting) não tem Node.js, então o build
+# O Hostinger (shared hosting) não tem Node.js — o build
 # precisa ser gerado localmente e commitado antes do deploy.
 # ============================================================
 /public/hot

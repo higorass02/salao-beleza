@@ -220,8 +220,7 @@ const initials = computed(() => {
 const flash = computed(() => page.props.flash ?? {});
 
 function isActive(path) {
-  if (path === '/') return page.url === '/' || page.url === '';
-  return page.url.startsWith(path);
+  return page.url === path || page.url.startsWith(path + '/') || page.url.startsWith(path + '?');
 }
 
 function navClass(path) {
