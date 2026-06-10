@@ -8,12 +8,16 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09Z" />
           </svg>
         </div>
-        <h1 class="mt-4 text-2xl font-bold text-gray-900">Salão de Beleza</h1>
-        <p class="mt-1 text-sm text-gray-500">Painel administrativo</p>
+        <h1 class="mt-4 text-2xl font-bold text-gray-900">Recuperar senha</h1>
+        <p class="mt-1 text-sm text-gray-500">Informe seu e-mail para receber o link de redefinição</p>
       </div>
 
       <!-- Card -->
       <div class="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
+        <div v-if="status" class="mb-5 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-700">
+          {{ status }}
+        </div>
+
         <form class="space-y-5" @submit.prevent="submit">
           <div>
             <label class="block text-sm font-medium text-gray-700">E-mail</label>
@@ -29,24 +33,6 @@
             <p v-if="form.errors.email" class="mt-1 text-xs text-red-600">{{ form.errors.email }}</p>
           </div>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700">Senha</label>
-            <input
-              v-model="form.password"
-              type="password"
-              autocomplete="current-password"
-              class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm shadow-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
-              :class="{ 'border-red-300 focus:border-red-500 focus:ring-red-500': form.errors.password }"
-              placeholder="••••••••"
-              required
-            />
-            <p v-if="form.errors.password" class="mt-1 text-xs text-red-600">{{ form.errors.password }}</p>
-          </div>
-
-          <div class="flex justify-end">
-            <a href="/forgot-password" class="text-xs text-rose-600 hover:text-rose-700">Esqueceu a senha?</a>
-          </div>
-
           <button
             type="submit"
             :disabled="form.processing"
@@ -56,10 +42,15 @@
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
-            {{ form.processing ? 'Entrando...' : 'Entrar' }}
+            {{ form.processing ? 'Enviando...' : 'Enviar link de recuperação' }}
           </button>
         </form>
       </div>
+
+      <p class="text-center text-sm text-gray-500">
+        Lembrou a senha?
+        <a href="/login" class="font-medium text-rose-600 hover:text-rose-700">Voltar ao login</a>
+      </p>
     </div>
   </div>
 </template>
@@ -67,15 +58,11 @@
 <script setup>
 import { useForm } from '@inertiajs/vue3';
 
-const form = useForm({
-  email: '',
-  password: '',
-  remember: false,
-});
+defineProps({ status: { type: String, default: null } });
+
+const form = useForm({ email: '' });
 
 function submit() {
-  form.post('/login', {
-    onFinish: () => form.reset('password'),
-  });
+  form.post('/forgot-password');
 }
 </script>
