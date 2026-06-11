@@ -165,7 +165,7 @@ import { Link, useForm } from '@inertiajs/vue3';
 import { vMaska } from 'maska/vue';
 import Layout from '@/Layouts/AdminLayout.vue';
 
-const phoneMask = ['(##) ####-####', '(##) #####-####'];
+const phoneMask = { mask: ['(##) ####-####', '(##) #####-####'] };
 
 const months = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',

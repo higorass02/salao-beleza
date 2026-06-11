@@ -140,7 +140,7 @@ const props = defineProps({
   client: { type: Object, required: true },
 });
 
-const phoneMask = ['(##) ####-####', '(##) #####-####'];
+const phoneMask = { mask: ['(##) ####-####', '(##) #####-####'] };
 
 const months = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',

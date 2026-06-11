@@ -148,7 +148,7 @@ const layout = computed(() =>
   page.props.auth?.user?.is_collaborator ? CollaboratorLayout : AdminLayout
 );
 
-const phoneMask = ['(##) ####-####', '(##) #####-####'];
+const phoneMask = { mask: ['(##) ####-####', '(##) #####-####'] };
 
 const months = [
   'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
