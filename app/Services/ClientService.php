@@ -9,7 +9,7 @@ use App\Notifications\ClientDeactivatedNotification;
 
 class ClientService
 {
-    public function list(?string $query = null, int $perPage = 20)
+    public function list(?string $query = null, int $perPage = 10)
     {
         return Client::orderByRaw('active DESC, name ASC')
             ->when($query, fn ($q) => $q->where(fn ($sub) =>
