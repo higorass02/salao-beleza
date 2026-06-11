@@ -533,7 +533,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Valor (R$) <span class="text-red-500">*</span></label>
-              <input v-model="entryForm.service_value" type="number" min="0" step="0.01" class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500" required />
+              <input v-model="entryForm.service_value" type="number" step="0.01" class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500" required />
               <p v-if="entryForm.errors.service_value" class="mt-1 text-xs text-red-600">{{ entryForm.errors.service_value }}</p>
             </div>
           </div>
@@ -564,6 +564,20 @@
               </div>
               <span class="text-sm text-gray-700">Incluir taxa de serviço da casa ({{ settings.house_fee_rate ?? 0 }}%)</span>
             </label>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">
+              Observações
+              <span v-if="Number(entryForm.service_value) < 0" class="text-red-500">*</span>
+            </label>
+            <textarea
+              v-model="entryForm.notes"
+              rows="2"
+              class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
+              placeholder="Motivo, descrição ou observação..."
+              :required="Number(entryForm.service_value) < 0"
+            />
+            <p v-if="entryForm.errors.notes" class="mt-1 text-xs text-red-600">{{ entryForm.errors.notes }}</p>
           </div>
           <div class="flex items-center justify-end gap-3 border-t border-gray-100 pt-4">
             <button type="button" @click="showAddModal = false" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Cancelar</button>
