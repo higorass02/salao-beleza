@@ -208,10 +208,10 @@
                 <button
                   v-else-if="!isClosed && emp.id !== 'manual'"
                   type="button"
-                  :disabled="emp.pendingValue > 0"
-                  :title="emp.pendingValue > 0 ? 'Preencha todos os campos \'Para quem foi pago\' antes de fechar' : ''"
+                  :disabled="emp.pendingValue !== 0"
+                  :title="emp.pendingValue !== 0 ? 'Preencha todos os campos \'Para quem foi pago\' antes de fechar' : ''"
                   class="inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-medium transition-colors"
-                  :class="emp.pendingValue > 0
+                  :class="emp.pendingValue !== 0
                     ? 'cursor-not-allowed bg-gray-100 text-gray-400'
                     : 'bg-slate-800 text-white hover:bg-slate-700'"
                   @click="emp.pendingValue === 0 && (providerCloseTarget = emp)"
@@ -250,7 +250,7 @@
               </div>
               <div class="px-5 py-3 text-sm">
                 <p class="text-xs text-gray-400">Pendente</p>
-                <p :class="emp.pendingValue > 0 ? 'text-amber-600 font-medium' : 'text-gray-400'">
+                <p :class="emp.pendingValue !== 0 ? 'text-amber-600 font-medium' : 'text-gray-400'">
                   {{ fmt(emp.pendingValue) }}
                 </p>
               </div>
@@ -259,7 +259,7 @@
             <!-- Resultado do acerto -->
             <div
               class="border-t px-5 py-3 flex items-center justify-between"
-              :class="emp.pendingValue > 0
+              :class="emp.pendingValue !== 0
                 ? 'bg-amber-50 border-amber-200'
                 : emp.net > 0
                   ? 'bg-blue-50 border-blue-200'
@@ -269,7 +269,7 @@
             >
               <p
                 class="text-sm font-semibold"
-                :class="emp.pendingValue > 0
+                :class="emp.pendingValue !== 0
                   ? 'text-amber-700'
                   : emp.net > 0
                     ? 'text-blue-700'
@@ -277,8 +277,8 @@
                       ? 'text-rose-700'
                       : 'text-emerald-700'"
               >
-                <template v-if="emp.pendingValue > 0">
-                  ⏳ Há {{ fmt(emp.pendingValue) }} pendente — preencha "Para quem foi pago"
+                <template v-if="emp.pendingValue !== 0">
+                  ⏳ {{ fmt(emp.pendingValue) }} pendente — preencha "Para quem foi pago"
                 </template>
                 <template v-else-if="emp.net > 0">
                   🏠 Casa deve ao prestador
@@ -386,7 +386,7 @@
                 </div>
                 <div class="px-4 py-2.5">
                   <p class="text-xs text-gray-400">Pendente</p>
-                  <p :class="emp.pendingValue > 0 ? 'text-amber-600 font-medium' : 'text-gray-400'">{{ fmt(emp.pendingValue) }}</p>
+                  <p :class="emp.pendingValue !== 0 ? 'text-amber-600 font-medium' : 'text-gray-400'">{{ fmt(emp.pendingValue) }}</p>
                 </div>
               </div>
 
@@ -403,14 +403,14 @@
 
               <div
                 class="border-t px-4 py-2.5 flex items-center justify-between text-sm font-semibold"
-                :class="emp.pendingValue > 0
+                :class="emp.pendingValue !== 0
                   ? 'bg-amber-50 border-amber-200 text-amber-700'
                   : emp.net > 0  ? 'bg-blue-50 border-blue-200 text-blue-700'
                   : emp.net < 0  ? 'bg-rose-50 border-rose-200 text-rose-700'
                   : 'bg-emerald-50 border-emerald-200 text-emerald-700'"
               >
                 <span>
-                  {{ emp.pendingValue > 0 ? '⏳ Há pendências'
+                  {{ emp.pendingValue !== 0 ? '⏳ Há pendências'
                     : emp.net > 0  ? '🏠 Casa deve ao prestador'
                     : emp.net < 0  ? '⚠️ Prestador deve à casa'
                     : '✓ Acertado' }}
