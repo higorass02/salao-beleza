@@ -155,7 +155,7 @@
             <img src="https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&w=600&q=80" alt="Cabelo" class="h-full w-full object-cover hover:scale-110 transition-transform duration-500" />
           </div>
           <div class="overflow-hidden rounded-2xl aspect-square">
-            <img src="https://images.unsplash.com/photo-1522337601-1d4c8e07bae5?auto=format&fit=crop&w=600&q=80" alt="Salão de beleza" class="h-full w-full object-cover hover:scale-110 transition-transform duration-500" />
+            <img src="https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=600&q=80" alt="Tratamento de beleza" class="h-full w-full object-cover hover:scale-110 transition-transform duration-500" />
           </div>
           <div class="overflow-hidden rounded-2xl aspect-square col-span-2 lg:col-span-1">
             <img src="https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&w=600&q=80" alt="Salão" class="h-full w-full object-cover hover:scale-110 transition-transform duration-500" />
