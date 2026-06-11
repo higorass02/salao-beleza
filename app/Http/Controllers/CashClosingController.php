@@ -59,11 +59,12 @@ class CashClosingController extends Controller
                 'id'               => $e->id,
                 'starts_at'        => $e->performed_at,
                 'client_name'      => $e->client_name,
-                'service_name'     => $e->employee?->name ?? $e->service_name,
+                'service_name'     => $e->service_name,
                 'service_value'    => (float) $e->service_value,
                 'include_house_fee'=> (bool)  $e->include_house_fee,
                 'paid_to'          => $e->paid_to,
                 'employee_id'      => $e->employee_id,
+                'employee_name'    => $e->employee?->name,
                 'type'             => 'entry',
             ]);
 
