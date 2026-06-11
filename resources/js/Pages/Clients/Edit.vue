@@ -59,7 +59,8 @@
             <label class="block text-sm font-medium text-gray-700">Telefone</label>
             <input
               v-maska="phoneMask"
-              v-model="form.phone"
+              :value="form.phone"
+              @input="form.phone = $event.target.value"
               type="text"
               inputmode="numeric"
               class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500"
