@@ -99,6 +99,8 @@
                 <span class="rounded-full bg-rose-50 border border-rose-100 px-3 py-1 text-xs text-rose-600">Luzes</span>
                 <span class="rounded-full bg-rose-50 border border-rose-100 px-3 py-1 text-xs text-rose-600">Tratamento</span>
                 <span class="rounded-full bg-rose-50 border border-rose-100 px-3 py-1 text-xs text-rose-600">Alisamento</span>
+                <span class="rounded-full bg-rose-50 border border-rose-100 px-3 py-1 text-xs text-rose-600">Hidratação</span>
+                <span class="rounded-full bg-rose-50 border border-rose-100 px-3 py-1 text-xs text-rose-600">Progressiva com e sem Formol</span>
               </div>
             </div>
           </div>
@@ -121,17 +123,44 @@
             <div class="p-8">
               <h3 class="text-2xl font-bold text-gray-900 mb-3" style="font-family: Georgia, serif;">Unhas</h3>
               <p class="text-gray-500 leading-relaxed mb-5">
-                Manicure, pedicure, gel, acrílico e nail art. Unhas perfeitas que completam o seu look com elegância.
+                Manicure e pedicure com esmaltação caprichada. Unhas perfeitas que completam o seu look com elegância.
               </p>
               <div class="flex flex-wrap gap-2">
                 <span class="rounded-full bg-pink-50 border border-pink-100 px-3 py-1 text-xs text-pink-600">Manicure</span>
                 <span class="rounded-full bg-pink-50 border border-pink-100 px-3 py-1 text-xs text-pink-600">Pedicure</span>
-                <span class="rounded-full bg-pink-50 border border-pink-100 px-3 py-1 text-xs text-pink-600">Gel</span>
-                <span class="rounded-full bg-pink-50 border border-pink-100 px-3 py-1 text-xs text-pink-600">Acrílico</span>
-                <span class="rounded-full bg-pink-50 border border-pink-100 px-3 py-1 text-xs text-pink-600">Nail Art</span>
               </div>
             </div>
           </div>
+
+          <!-- Depilação -->
+          <div class="group overflow-hidden rounded-3xl bg-white shadow-sm hover:shadow-xl transition-shadow md:col-span-2">
+            <div class="grid md:grid-cols-2">
+              <div class="relative h-72 overflow-hidden">
+                <img
+                  src="https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&w=800&q=80"
+                  alt="Depilação e sobrancelha"
+                  class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                <div class="absolute bottom-5 left-6">
+                  <span class="inline-flex items-center gap-1.5 rounded-full bg-violet-500 px-3 py-1 text-xs font-medium text-white">
+                    ✦ Especialidade
+                  </span>
+                </div>
+              </div>
+              <div class="p-8 flex flex-col justify-center">
+                <h3 class="text-2xl font-bold text-gray-900 mb-3" style="font-family: Georgia, serif;">Depilação</h3>
+                <p class="text-gray-500 leading-relaxed mb-5">
+                  Design e modelagem de sobrancelhas e depilação corporal. Realce seus traços com técnicas precisas e cuidadosas.
+                </p>
+                <div class="flex flex-wrap gap-2">
+                  <span class="rounded-full bg-violet-50 border border-violet-100 px-3 py-1 text-xs text-violet-600">Sobrancelha</span>
+                  <span class="rounded-full bg-violet-50 border border-violet-100 px-3 py-1 text-xs text-violet-600">Depilação</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </section>
