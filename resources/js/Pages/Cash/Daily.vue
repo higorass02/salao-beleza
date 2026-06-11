@@ -723,7 +723,7 @@ const byEmployee = computed(() => {
 
     const emp = map.get(empId);
     const val = parseFloat(item.service_value ?? 0);
-    const taxa = val * rate;
+    const taxa = val > 0 ? val * rate : 0;
     const parteProvider = val - taxa;
 
     emp.count++;

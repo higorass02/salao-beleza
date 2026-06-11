@@ -44,7 +44,7 @@ class CashClosingService
         foreach ($entries as $entry) {
             $val          = (float) $entry->service_value;
             $total       += $val;
-            $feeableTotal += $val;
+            if ($val > 0) $feeableTotal += $val;
             if ($entry->paid_to === 'provider')  $providerSum += $val;
             elseif ($entry->paid_to === 'store') $storeSum    += $val;
         }
@@ -110,7 +110,7 @@ class CashClosingService
 
         foreach ($manualEntries as $entry) {
             $val  = (float) $entry->service_value;
-            $taxa = $val * $effectiveRate;
+            $taxa = $val > 0 ? $val * $effectiveRate : 0.0;
             $totalServices += $val;
             if ($entry->paid_to === 'provider') {
                 $receivedByProvider += $val;
@@ -162,7 +162,7 @@ class CashClosingService
             }
 
             $rate          = $chargesFee ? $houseRate : 0.0;
-            $taxa          = $val * $rate;
+            $taxa          = $val > 0 ? $val * $rate : 0.0;
             $shareProvider = $val - $taxa;
 
             $map[$empId]['total_services'] += $val;
