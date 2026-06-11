@@ -1,5 +1,19 @@
 <template>
   <Layout>
+    <!-- Loading overlay durante criação/remoção de agendamento -->
+    <div
+      v-if="isLoading"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-sm"
+    >
+      <div class="flex flex-col items-center gap-3">
+        <svg class="h-8 w-8 animate-spin text-rose-600" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+        </svg>
+        <span class="text-sm font-medium text-gray-600">Atualizando agenda...</span>
+      </div>
+    </div>
+
     <div class="space-y-6">
       <div>
         <h1 class="text-2xl font-bold text-gray-900">Agenda</h1>
@@ -105,7 +119,8 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted } from 'vue';
+import { ref, watch, onMounted, onUnmounted } from 'vue';
+import { router } from '@inertiajs/vue3';
 import Layout from '@/Layouts/AdminLayout.vue';
 import AppointmentModal from './AppointmentModal.vue';
 import AppointmentDetailModal from './AppointmentDetailModal.vue';
@@ -148,6 +163,12 @@ function mapToEvents(appointments) {
   });
 }
 
+// --- loading durante navegação Inertia ---
+const isLoading = ref(false);
+const stopStart  = router.on('start',  () => { isLoading.value = true;  });
+const stopFinish = router.on('finish', () => { isLoading.value = false; });
+onUnmounted(() => { stopStart(); stopFinish(); });
+
 // --- estado ---
 const showModal           = ref(false);
 const selectedDate        = ref(null);
@@ -182,6 +203,8 @@ function applyFilters() {
   calendarInstance.removeAllEvents();
   calendarInstance.addEventSource(mapToEvents(getFiltered()));
 }
+
+watch(() => props.appointments, () => applyFilters());
 
 function selectEmployee(id) {
   selectedEmployeeId.value = id;
