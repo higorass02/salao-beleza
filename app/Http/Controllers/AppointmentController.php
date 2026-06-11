@@ -51,7 +51,7 @@ class AppointmentController extends Controller
     {
         $appointment = $service->create($request->validated());
 
-        return redirect()->route('dashboard')->with('success', 'Agendamento criado com sucesso.');
+        return redirect()->back()->with('success', 'Agendamento criado com sucesso.');
     }
 
     public function edit(Appointment $appointment)
@@ -74,6 +74,6 @@ class AppointmentController extends Controller
     {
         $appointment->delete();
 
-        return redirect()->route('dashboard')->with('success', 'Agendamento removido com sucesso.');
+        return redirect()->back()->with('success', 'Agendamento removido com sucesso.');
     }
 }
