@@ -155,13 +155,13 @@
             <img src="https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&w=600&q=80" alt="Cabelo" class="h-full w-full object-cover hover:scale-110 transition-transform duration-500" />
           </div>
           <div class="overflow-hidden rounded-2xl aspect-square">
-            <img src="https://images.unsplash.com/photo-1633681122618-81e1bd1b4f49?auto=format&fit=crop&w=600&q=80" alt="Nail art" class="h-full w-full object-cover hover:scale-110 transition-transform duration-500" />
+            <img src="https://images.unsplash.com/photo-1522337601-1d4c8e07bae5?auto=format&fit=crop&w=600&q=80" alt="Salão de beleza" class="h-full w-full object-cover hover:scale-110 transition-transform duration-500" />
           </div>
           <div class="overflow-hidden rounded-2xl aspect-square col-span-2 lg:col-span-1">
             <img src="https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&w=600&q=80" alt="Salão" class="h-full w-full object-cover hover:scale-110 transition-transform duration-500" />
           </div>
           <div class="overflow-hidden rounded-2xl aspect-square hidden lg:block">
-            <img src="https://images.unsplash.com/photo-1604176354204-9268737828e4?auto=format&fit=crop&w=600&q=80" alt="Cabelo colorido" class="h-full w-full object-cover hover:scale-110 transition-transform duration-500" />
+            <img src="https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&w=600&q=80" alt="Penteado" class="h-full w-full object-cover hover:scale-110 transition-transform duration-500" />
           </div>
         </div>
       </div>
