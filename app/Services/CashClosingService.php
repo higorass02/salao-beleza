@@ -83,6 +83,10 @@ class CashClosingService
             ->where('status', '!=', 'canceled')
             ->get();
 
+        $manualEntries = \App\Models\CashEntry::where('date', $date)
+            ->where('employee_id', $employeeId)
+            ->get();
+
         $totalServices      = 0.0;
         $receivedByProvider = 0.0;
         $receivedByStore    = 0.0;
@@ -99,6 +103,19 @@ class CashClosingService
                 $receivedByProvider += $val;
                 $prestadorDeveCasa  += $taxa;
             } elseif ($appt->paid_to === 'store') {
+                $receivedByStore   += $val;
+                $casaDevePrestador += $val - $taxa;
+            }
+        }
+
+        foreach ($manualEntries as $entry) {
+            $val  = (float) $entry->service_value;
+            $taxa = $val * $effectiveRate;
+            $totalServices += $val;
+            if ($entry->paid_to === 'provider') {
+                $receivedByProvider += $val;
+                $prestadorDeveCasa  += $taxa;
+            } elseif ($entry->paid_to === 'store') {
                 $receivedByStore   += $val;
                 $casaDevePrestador += $val - $taxa;
             }
@@ -130,7 +147,7 @@ class CashClosingService
             ->where('status', '!=', 'canceled')
             ->get();
 
-        $entries = CashEntry::whereBetween('date', [$start->toDateString(), $end->toDateString()])->get();
+        $entries = CashEntry::with('employee')->whereBetween('date', [$start->toDateString(), $end->toDateString()])->get();
 
         $map = [];
 
@@ -172,7 +189,15 @@ class CashClosingService
         }
 
         foreach ($entries as $entry) {
-            $addItem('manual', 'Entrada manual', (float) $entry->service_value, $entry->paid_to, true);
+            if ($entry->employee_id) {
+                $emp        = $entry->employee;
+                $empId      = (string) $entry->employee_id;
+                $empName    = $emp?->name ?? 'Entrada manual';
+                $chargesFee = $emp?->charges_house_fee !== false;
+                $addItem($empId, $empName, (float) $entry->service_value, $entry->paid_to, $chargesFee);
+            } else {
+                $addItem('manual', 'Entrada manual', (float) $entry->service_value, $entry->paid_to, true);
+            }
         }
 
         return array_values(array_map(function ($p) {

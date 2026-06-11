@@ -51,17 +51,19 @@ class CashClosingController extends Controller
                 'type'             => 'appointment',
             ]);
 
-        $entries = CashEntry::where('date', $validated)
+        $entries = CashEntry::with('employee')
+            ->where('date', $validated)
             ->orderBy('performed_at')
             ->get()
             ->map(fn ($e) => [
                 'id'               => $e->id,
                 'starts_at'        => $e->performed_at,
                 'client_name'      => $e->client_name,
-                'service_name'     => $e->service_name,
+                'service_name'     => $e->employee?->name ?? $e->service_name,
                 'service_value'    => (float) $e->service_value,
                 'include_house_fee'=> (bool)  $e->include_house_fee,
                 'paid_to'          => $e->paid_to,
+                'employee_id'      => $e->employee_id,
                 'type'             => 'entry',
             ]);
 
@@ -88,6 +90,7 @@ class CashClosingController extends Controller
             'preview'          => $preview,
             'settings'         => Setting::allAsArray(),
             'providerClosings' => $providerClosings,
+            'employees'        => Employee::where('active', true)->orderBy('name')->get(['id', 'name']),
         ]);
     }
 

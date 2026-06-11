@@ -543,9 +543,11 @@
             <p v-if="entryForm.errors.client_name" class="mt-1 text-xs text-red-600">{{ entryForm.errors.client_name }}</p>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700">Serviço <span class="text-red-500">*</span></label>
-            <input v-model="entryForm.service_name" type="text" class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500" placeholder="Nome do serviço" required />
-            <p v-if="entryForm.errors.service_name" class="mt-1 text-xs text-red-600">{{ entryForm.errors.service_name }}</p>
+            <label class="block text-sm font-medium text-gray-700">Prestador</label>
+            <select v-model="entryForm.employee_id" class="mt-1 block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-rose-500 focus:outline-none focus:ring-1 focus:ring-rose-500">
+              <option :value="null">— Nenhum (entrada geral) —</option>
+              <option v-for="e in employees" :key="e.id" :value="e.id">{{ e.name }}</option>
+            </select>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700">Para quem?</label>
@@ -613,6 +615,7 @@ const props = defineProps({
   preview:          { type: Object, default: null },
   settings:         { type: Object, default: () => ({}) },
   providerClosings: { type: Object, default: () => ({}) },
+  employees:        { type: Array,  default: () => [] },
 });
 
 const today = isoToBr(new Date().toISOString().split('T')[0]);
@@ -816,8 +819,8 @@ function reopenProvider(emp) {
 // Entry form
 const entryForm = useForm({
   performed_at:      '',
+  employee_id:       null,
   client_name:       '',
-  service_name:      '',
   service_value:     '',
   include_house_fee: false,
   paid_to:           '',

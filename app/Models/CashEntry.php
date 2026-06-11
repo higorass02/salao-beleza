@@ -8,6 +8,7 @@ class CashEntry extends Model
 {
     protected $fillable = [
         'date',
+        'employee_id',
         'performed_at',
         'client_name',
         'service_name',
@@ -16,6 +17,11 @@ class CashEntry extends Model
         'paid_to',
         'notes',
     ];
+
+    public function employee()
+    {
+        return $this->belongsTo(Employee::class);
+    }
 
     protected $casts = [
         'date'                => 'date',
