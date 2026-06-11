@@ -20,6 +20,7 @@ class CashClosingService
 
         $appointments = Appointment::with(['service', 'employee'])
             ->whereDate('starts_at', $date)
+            ->where('status', '!=', 'canceled')
             ->get();
 
         $entries = CashEntry::where('date', $date)->get();
@@ -79,6 +80,7 @@ class CashClosingService
         $appointments = Appointment::with('service')
             ->whereDate('starts_at', $date)
             ->where('employee_id', $employeeId)
+            ->where('status', '!=', 'canceled')
             ->get();
 
         $totalServices      = 0.0;
@@ -125,6 +127,7 @@ class CashClosingService
 
         $appointments = Appointment::with(['service', 'employee'])
             ->whereBetween(\DB::raw('DATE(starts_at)'), [$start->toDateString(), $end->toDateString()])
+            ->where('status', '!=', 'canceled')
             ->get();
 
         $entries = CashEntry::whereBetween('date', [$start->toDateString(), $end->toDateString()])->get();

@@ -26,6 +26,9 @@ class AppointmentBookingFlowTest extends TestCase
         $router->post('/appointments', [AppointmentController::class, 'store'])
                ->name('appointments.store');
 
+        $router->get('/appointments', fn () => response()->noContent())
+               ->name('appointments.index');
+
         $router->get('/dashboard', fn () => response()->noContent())
                ->name('dashboard');
 
@@ -56,12 +59,12 @@ class AppointmentBookingFlowTest extends TestCase
 
     // ── Fluxo feliz ───────────────────────────────────────────────────────────
 
-    public function test_booking_creates_appointment_and_redirects_to_dashboard(): void
+    public function test_booking_creates_appointment_and_redirects_to_calendar(): void
     {
         $payload = $this->validPayload();
 
         $this->post('/appointments', $payload)
-             ->assertRedirect('/dashboard');
+             ->assertRedirect('/appointments');
 
         $this->assertDatabaseHas('appointments', [
             'client_id'   => $payload['client_id'],
@@ -157,7 +160,7 @@ class AppointmentBookingFlowTest extends TestCase
         $payload = $this->validPayload(['starts_at' => '2020-01-01 10:00:00']);
 
         $this->post('/appointments', $payload)
-             ->assertRedirect('/dashboard');
+             ->assertRedirect('/appointments');
 
         $this->assertDatabaseHas('appointments', [
             'client_id'  => $payload['client_id'],

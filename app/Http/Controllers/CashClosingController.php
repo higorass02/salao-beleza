@@ -35,6 +35,7 @@ class CashClosingController extends Controller
 
         $appointments = Appointment::with(['client', 'service', 'employee'])
             ->whereDate('starts_at', $validated)
+            ->where('status', '!=', 'canceled')
             ->orderBy('starts_at')
             ->get()
             ->map(fn ($a) => [
