@@ -30,23 +30,23 @@ class ServiceController extends Controller
         return redirect()->route('services.index');
     }
 
-    public function edit(ServiceModel $serviceModel)
+    public function edit(ServiceModel $service)
     {
         return Inertia::render('Services/Edit', [
-            'service' => $serviceModel,
+            'service' => $service,
         ]);
     }
 
-    public function update(UpdateServiceRequest $request, ServiceModel $serviceModel, ServiceService $service)
+    public function update(UpdateServiceRequest $request, ServiceModel $service, ServiceService $svc)
     {
-        $service->update($serviceModel, $request->validated());
+        $svc->update($service, $request->validated());
 
         return redirect()->route('services.index');
     }
 
-    public function destroy(ServiceModel $serviceModel)
+    public function destroy(ServiceModel $service)
     {
-        $serviceModel->delete();
+        $service->delete();
 
         return redirect()->route('services.index');
     }
