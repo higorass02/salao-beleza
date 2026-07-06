@@ -38,6 +38,26 @@ class AppointmentRepository implements AppointmentRepositoryInterface
             ->exists();
     }
 
+    public function hasEmployeeConflict(int $employeeId, string $startsAt, string $endsAt): bool
+    {
+        return Appointment::where('employee_id', $employeeId)
+            ->where('status', '!=', 'canceled')
+            ->where('starts_at', '<', $endsAt)
+            ->where('ends_at', '>', $startsAt)
+            ->exists();
+    }
+
+    public function getConflictingForEmployee(int $employeeId, string $startsAt, string $endsAt): \Illuminate\Support\Collection
+    {
+        return Appointment::with(['client', 'service'])
+            ->where('employee_id', $employeeId)
+            ->whereNotIn('status', ['canceled', 'blocked'])
+            ->where('starts_at', '<', $endsAt)
+            ->where('ends_at', '>', $startsAt)
+            ->orderBy('starts_at')
+            ->get();
+    }
+
     public function findService(int $id): Service
     {
         return Service::findOrFail($id);

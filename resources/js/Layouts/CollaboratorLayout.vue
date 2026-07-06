@@ -67,6 +67,13 @@
           Clientes
         </Link>
 
+        <Link href="/collaborator/blocked-slots" :class="navClass('/collaborator/blocked-slots')" @click="sidebarOpen = false">
+          <svg class="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 0 0 5.636 5.636m12.728 12.728A9 9 0 0 1 5.636 5.636m12.728 12.728L5.636 5.636" />
+          </svg>
+          Meus Bloqueios
+        </Link>
+
         <!-- Separador -->
         <div class="my-3 border-t border-slate-800" />
 

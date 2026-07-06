@@ -8,15 +8,27 @@
           Espaço <span class="text-rose-300">Delas</span>
         </span>
       </div>
-      <a
-        href="/login"
-        class="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/10 backdrop-blur px-5 py-2 text-sm font-medium text-white hover:bg-white/20 transition-all"
-      >
-        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
-        </svg>
-        Área do Salão
-      </a>
+      <div class="flex items-center gap-3">
+        <a
+          href="/booking"
+          class="inline-flex items-center gap-2 rounded-full bg-rose-500 px-5 py-2 text-sm font-semibold text-white hover:bg-rose-400 transition-all shadow-md"
+        >
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+          </svg>
+          <span class="hidden sm:inline">Agende seu serviço</span>
+          <span class="sm:hidden">Agendar</span>
+        </a>
+        <a
+          href="/login"
+          class="inline-flex items-center gap-2 rounded-full border border-white/60 bg-white/10 backdrop-blur px-5 py-2 text-sm font-medium text-white hover:bg-white/20 transition-all"
+        >
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
+          </svg>
+          Área do Salão
+        </a>
+      </div>
     </nav>
 
     <!-- Hero -->
@@ -40,19 +52,22 @@
         </p>
         <div class="flex flex-wrap gap-4 justify-center">
           <a
-            href="#servicos"
+            href="/booking"
             class="inline-flex items-center gap-2 rounded-full bg-rose-500 px-8 py-4 text-white font-semibold text-base hover:bg-rose-400 transition-colors shadow-lg"
+          >
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5" />
+            </svg>
+            Agende seu serviço
+          </a>
+          <a
+            href="#servicos"
+            class="inline-flex items-center gap-2 rounded-full border border-white/50 bg-white/10 backdrop-blur px-8 py-4 text-white font-semibold text-base hover:bg-white/20 transition-all"
           >
             Nossos serviços
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
             </svg>
-          </a>
-          <a
-            href="#contato"
-            class="inline-flex items-center gap-2 rounded-full border border-white/50 bg-white/10 backdrop-blur px-8 py-4 text-white font-semibold text-base hover:bg-white/20 transition-all"
-          >
-            Como chegar
           </a>
         </div>
       </div>

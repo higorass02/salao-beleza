@@ -5,6 +5,7 @@ use App\Http\Controllers\Auth\ChangePasswordController;
 use App\Http\Controllers\CashClosingController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\PublicBooking\BookingController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\WeeklyClosingController;
@@ -16,6 +17,24 @@ require __DIR__.'/auth.php';
 Route::get('/', function () {
     return inertia('Landing');
 })->name('landing');
+
+// -------------------------------------------------------
+// Google OAuth para clientes (agendamento público)
+// -------------------------------------------------------
+Route::get('/auth/client/google', [\App\Http\Controllers\Auth\Client\GoogleController::class, 'redirect'])->name('client.google.redirect');
+Route::get('/auth/client/google/callback', [\App\Http\Controllers\Auth\Client\GoogleController::class, 'callback'])->name('client.google.callback');
+
+// -------------------------------------------------------
+// Agendamento público (sem autenticação)
+// -------------------------------------------------------
+Route::prefix('booking')->name('booking.')->group(function () {
+    Route::get('/', [BookingController::class, 'servicesIndex'])->name('services');
+    Route::get('/service/{service}/employees', [BookingController::class, 'employeesByService'])->name('employees');
+    Route::get('/slots', [BookingController::class, 'availableSlots'])->name('slots');
+    Route::get('/confirm', [BookingController::class, 'showConfirm'])->name('confirm');
+    Route::post('/', [BookingController::class, 'store'])->name('store');
+    Route::get('/confirmed/{appointment}', [BookingController::class, 'confirmed'])->name('confirmed');
+});
 
 // -------------------------------------------------------
 // -------------------------------------------------------
@@ -48,6 +67,13 @@ Route::middleware(['auth', 'collaborator', 'password.changed'])->prefix('collabo
 
     Route::get('/settings', [\App\Http\Controllers\Collaborator\SettingsController::class, 'edit'])->name('settings');
     Route::put('/settings', [\App\Http\Controllers\Collaborator\SettingsController::class, 'update'])->name('settings.update');
+
+    // Bloqueio de horários
+    Route::prefix('blocked-slots')->name('blocked-slots.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Collaborator\BlockedSlotController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Collaborator\BlockedSlotController::class, 'store'])->name('store');
+        Route::delete('/{slot}', [\App\Http\Controllers\Collaborator\BlockedSlotController::class, 'destroy'])->name('destroy');
+    });
 });
 
 // -------------------------------------------------------
@@ -83,4 +109,12 @@ Route::middleware(['auth', 'admin', 'password.changed'])->group(function () {
     // Configurações
     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
     Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
+
+    // Bloqueio de horários (admin pode bloquear qualquer funcionário)
+    Route::prefix('admin/blocked-slots')->name('admin.blocked-slots.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\BlockedSlotController::class, 'index'])->name('index');
+        Route::post('/', [\App\Http\Controllers\Admin\BlockedSlotController::class, 'store'])->name('store');
+        Route::delete('/{slot}', [\App\Http\Controllers\Admin\BlockedSlotController::class, 'destroy'])->name('destroy');
+        Route::get('/appointments-in-range', [\App\Http\Controllers\Admin\BlockedSlotController::class, 'appointmentsInRange'])->name('appointments-in-range');
+    });
 });

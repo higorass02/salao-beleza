@@ -20,9 +20,15 @@ class Handler extends ExceptionHandler
     {
         $this->renderable(function (AppointmentConflictException $exception, $request) {
             if ($request->expectsJson() || $request->wantsJson()) {
-                return response()->json([
-                    'message' => $exception->getMessage(),
-                ], 422);
+                return response()->json(['message' => $exception->getMessage()], 422);
+            }
+
+            return back()->withErrors(['starts_at' => $exception->getMessage()]);
+        });
+
+        $this->renderable(function (SlotUnavailableException $exception, $request) {
+            if ($request->expectsJson() || $request->wantsJson()) {
+                return response()->json(['message' => $exception->getMessage()], 422);
             }
 
             return back()->withErrors(['starts_at' => $exception->getMessage()]);

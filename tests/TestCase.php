@@ -13,10 +13,13 @@ abstract class TestCase extends OrchestraTestCase
     {
         $app['config']->set('database.default', 'sqlite');
         $app['config']->set('database.connections.sqlite', [
-            'driver' => 'sqlite',
+            'driver'   => 'sqlite',
             'database' => ':memory:',
-            'prefix' => '',
+            'prefix'   => '',
         ]);
+
+        // Permite que Inertia encontre a view raiz nos testes
+        $app['view']->addLocation(__DIR__ . '/../resources/views');
     }
 
     protected function getPackageProviders($app)

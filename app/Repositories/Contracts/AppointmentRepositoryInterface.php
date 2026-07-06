@@ -13,6 +13,10 @@ interface AppointmentRepositoryInterface
 
     public function hasConflict(int $employeeId, int $serviceId, string $startsAt, string $endsAt, ?int $excludeId = null): bool;
 
+    public function hasEmployeeConflict(int $employeeId, string $startsAt, string $endsAt): bool;
+
+    public function getConflictingForEmployee(int $employeeId, string $startsAt, string $endsAt): \Illuminate\Support\Collection;
+
     public function findService(int $id): Service;
 
     public function createAppointment(array $data): Appointment;

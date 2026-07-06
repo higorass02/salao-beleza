@@ -18,6 +18,8 @@ class Client extends Model
         'notes',
         'birth_day',
         'birth_month',
+        'google_id',
+        'google_avatar',
     ];
 
     protected $casts = [
